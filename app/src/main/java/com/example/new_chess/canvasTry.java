@@ -1,8 +1,6 @@
 package com.example.new_chess;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,37 +8,17 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.new_chess.game.Board;
-import com.example.new_chess.game.Player;
-import com.example.new_chess.game.*;
-import com.example.new_chess.pieces.*;
-
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity {
-
+public class canvasTry extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_canvas_try);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-           ChessBoardView chessBoardView = findViewById(R.id.chessBoard);
-        Player white = new Player(0);
-        Player black = new Player(1);
-
-        Board board = new Board(white, black);
-        chessBoardView.setBoard(board);
-    }
-
-    public void play(View view){
-
-
     }
 }

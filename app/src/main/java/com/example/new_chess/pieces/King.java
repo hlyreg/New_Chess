@@ -19,7 +19,7 @@ public class King extends Piece{
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
         int x = this.place.getX();
         int y = this.place.getY();
-        String[][] board = current_board.getBoard();
+        Piece[][] board = current_board.getBoard();
         List<Point> moves = new ArrayList<>();
         int tryY; int tryX;
 
@@ -29,34 +29,36 @@ public class King extends Piece{
             for(int width = -1; width < 2; width++){
                 tryY = y+height;
                 tryX = x+width;
-                if(tryX < 8 && tryY < 8 && tryX >= 0 && tryY >= 0 && isEmpty(board, tryY, tryX) &&
-                        !isCheck(opponent, this.ID, new Point(tryY, tryX), current_board)){
-                    moves.add(new Point(tryY, tryX));
+                if(tryX < 8 && tryY < 8 && tryX >= 0 && tryY >= 0 && isEmpty(board, tryX, tryY) ){
+                    moves.add(new Point(tryX, tryY));
                 }
             }
         }
-        List<Point> right = this.continueDirection(1,0, current_board, opponent);
-        List<Point> left = this.continueDirection(-1,0, current_board, opponent);
-
-        if(!this.moved && this.player.getPieces()[13] instanceof Rook && !((Rook) this.player.getPieces()[13]).getMoved() &&
-                right.get((right.toArray().length-1)).compare(this.place.getY(), 6) &&!right.get((right.toArray().length-1)).isTakes())
-
-            moves.add(new Point(this.place.getY(), 6, false, false, true));
-
-
-        if(!this.moved && this.player.getPieces()[8] instanceof Rook && !((Rook) this.player.getPieces()[13]).getMoved() &&
-                left.get((left.toArray().length-1)).compare(this.place.getY(), 1) &&!left.get((left.toArray().length-1)).isTakes())
-
-            moves.add(new Point(this.place.getY(), 1, false, false, true));
-
-
 
         return moves;
     }
 
-    @Override
-    public void move(Point newPlace) {
-        this.place = newPlace;
+    public boolean getMoved(){
+        return this.moved;
     }
+
+    public void move(Point move) {
+        this.place = new Point(move);
+
+        if (move.isCastling()) {
+            // King-side
+            if (move.getX() == 6) {
+                Rook rook = (Rook) this.player.getPieces()[15];
+                rook.move(new Point(5, move.getY()));
+            }
+            // Queen-side
+            else if (move.getX() == 2) {
+                Rook rook = (Rook) this.player.getPieces()[8];
+                rook.move(new Point(3, move.getY()));
+            }
+        }
+    }
+
+
 
 }

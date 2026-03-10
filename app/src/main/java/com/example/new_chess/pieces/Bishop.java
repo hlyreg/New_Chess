@@ -14,20 +14,17 @@ public class Bishop extends Piece{
 
     @Override
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
-        int x = this.place.getX();
-        int y = this.place.getY();
-        String[][] board = current_board.getBoard();
         List<Point> moves = new ArrayList<>();
 
 //________________________________________________________________________
 
-        moves.addAll(this.continueDirection(1,1, current_board, opponent));  //top right
+        moves.addAll(this.continueDirection(1,1, current_board));  //top right
 
-        moves.addAll(this.continueDirection(-1,1, current_board, opponent));   //top left
+        moves.addAll(this.continueDirection(-1,1, current_board));   //top left
 
-        moves.addAll(this.continueDirection(-1,-1, current_board, opponent));   //bottom left
+        moves.addAll(this.continueDirection(-1,-1, current_board));   //bottom left
 
-        moves.addAll(this.continueDirection(1,-1, current_board, opponent));    //bottom right
+        moves.addAll(this.continueDirection(1,-1, current_board));    //bottom right
 
 //___________________________________________________________________________
 

@@ -17,20 +17,18 @@ public class Rook extends Piece{
 
     @Override
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
-        int x = this.place.getX();
-        int y = this.place.getY();
-        String[][] board = current_board.getBoard();
+
         List<Point> moves = new ArrayList<>();
 
 //_________________________________________________________________________
 
-        moves.addAll(this.continueDirection(0,1, current_board, opponent));     //UP
+        moves.addAll(this.continueDirection(0,1, current_board));     //UP
 
-        moves.addAll(this.continueDirection(0,-1, current_board, opponent));    //DOWN
+        moves.addAll(this.continueDirection(0,-1, current_board));    //DOWN
 
-        moves.addAll(this.continueDirection(-1,0, current_board, opponent));    //LEFT
+        moves.addAll(this.continueDirection(-1,0, current_board));    //LEFT
 
-        moves.addAll(this.continueDirection(1,0, current_board, opponent));     //RIGHT
+        moves.addAll(this.continueDirection(1,0, current_board));     //RIGHT
 //_______________________________________________________________________________
 
 
@@ -47,15 +45,20 @@ public class Rook extends Piece{
         return this.moved;
     }
 
-    public Point castling(){  //!!!!!!!!!!!!!!!!!!! - after the King do this
-        if(this.place.compare(this.place.getY(), 7)) {
-            this.place = new Point(this.place.getY(), 5);
-            return this.place;
+    public Point castling(){
+        if(player.getPieces()[11] instanceof King) {
+            King myking = (King) player.getPieces()[11];
+            if(!myking.getMoved() && !this.moved) {            //if the king hasn't moved yet
+                if (this.place.compare(this.place.getY(), 7)) {
+                    this.place = new Point(this.place.getY(), 5);
+                    return this.place;
+                } else {
+                    this.place = new Point(this.place.getY(), 2);
+                    return this.place;
+                }
+            }
         }
-        else{
-            this.place = new Point(this.place.getY(), 2);
-            return this.place;
-        }
+        return null;
     }
 
 }
