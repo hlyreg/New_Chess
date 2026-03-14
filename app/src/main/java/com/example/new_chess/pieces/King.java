@@ -15,6 +15,11 @@ public class King extends Piece{
         this.moved = false;
     }
 
+    public King(King other, Player player){
+        super(other, player);
+        this.moved = other.moved;
+    }
+
     @Override
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
         int x = this.place.getX();
@@ -29,7 +34,7 @@ public class King extends Piece{
             for(int width = -1; width < 2; width++){
                 tryY = y+height;
                 tryX = x+width;
-                if(tryX < 8 && tryY < 8 && tryX >= 0 && tryY >= 0 && isEmpty(board, tryX, tryY) ){
+                if(tryX < 8 && tryY < 8 && tryX >= 0 && tryY >= 0 && (isEmpty(board, tryX, tryY) || !isComrade(board, tryX, tryY ))){
                     moves.add(new Point(tryX, tryY));
                 }
             }
@@ -37,6 +42,12 @@ public class King extends Piece{
 
         return moves;
     }
+
+    @Override
+    public Piece copy(Player player) {
+        return new King(this, player);
+    }
+
 
     public boolean getMoved(){
         return this.moved;

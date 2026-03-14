@@ -14,6 +14,10 @@ public class Rook extends Piece{
         super(place, colour, player, ID);
         this.moved = false;
     }
+    public Rook(Rook other, Player player){
+        super(other, player);
+        this.moved = other.moved;
+    }
 
     @Override
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
@@ -40,6 +44,13 @@ public class Rook extends Piece{
         this.place = newPlace;
         this.moved = true;
     }
+
+
+    @Override
+    public Piece copy(Player player) {
+        return new Rook(this, player);
+    }
+
 
     public boolean getMoved(){
         return this.moved;

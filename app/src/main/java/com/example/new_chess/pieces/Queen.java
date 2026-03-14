@@ -11,6 +11,9 @@ public class Queen extends Piece{
     public Queen(Point place, int colour, Player player, int ID){
         super(place, colour, player, ID);
     }
+    public Queen(Queen other, Player player){
+        super(other, player);
+    }
 
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
         Piece[][] board = current_board.getBoard();
@@ -26,6 +29,12 @@ public class Queen extends Piece{
 
         return moves;
     }
+
+    @Override
+    public Piece copy(Player player) {
+        return new Queen(this, player);
+    }
+
 
     @Override
     public void move(Point newPlace) {

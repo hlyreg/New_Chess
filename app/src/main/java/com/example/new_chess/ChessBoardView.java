@@ -37,10 +37,10 @@ public class ChessBoardView extends View {
     private Map<Class<? extends Piece>, Bitmap[]> pieceBitmaps;
     private int selectedX = -1; // horizontal, -1 because nothing has been selected yet
     private int selectedY = -1; // vertical
-    private Paint highlightPaint = new Paint();
+    private Paint highlightPaint = new Paint();  // the colour place holder
     private List<Point> legalMoves = new ArrayList<>();
-    private Piece selectedPiece = null;
-    private boolean whiteToMove = true;
+    private Piece selectedPiece = null;   // what piece is currently selected
+    private boolean whiteToMove = true;  // is it whites turn?
 
 
 
@@ -207,8 +207,8 @@ public class ChessBoardView extends View {
         // Piece already selected → try to move
         for (Point move : legalMoves) {
             if (move.compare(tap.getX(), tap.getY())) {
-                game.getBoard().makeMove(selectedPiece, move);
-                whiteToMove = !whiteToMove;
+                game.makeMove(selectedPiece, move);
+                whiteToMove = !whiteToMove;   // switch the whose turn it is
                 break;
             }
         }

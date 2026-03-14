@@ -12,6 +12,11 @@ public class Bishop extends Piece{
         super(place, colour, player, ID);
     }
 
+    public Bishop(Bishop other, Player player){
+        super(other, player);
+    }
+
+
     @Override
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
         List<Point> moves = new ArrayList<>();
@@ -30,6 +35,12 @@ public class Bishop extends Piece{
 
         return moves;
     }
+
+    @Override
+    public Piece copy(Player player) {
+        return new Bishop(this, player);
+    }
+
 
 
     @Override

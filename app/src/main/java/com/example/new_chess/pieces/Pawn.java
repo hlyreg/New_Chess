@@ -16,6 +16,10 @@ public class Pawn extends Piece {
         super(place, colour, player, ID);
         this.moved = 0;
     }
+    public Pawn(Pawn other, Player player){
+        super(other, player);
+        this.moved = other.moved;
+    }
 
     @Override
     public List<Point> getMoves(Board current_board, boolean is_twice, Player opponent) {
@@ -77,6 +81,31 @@ public class Pawn extends Piece {
 
         }
 
+        // is en passant possible:
+        if (current_board.wasLastMovePawnTwo()) {
+
+            Point last = current_board.getLastMovePawnTwo();  // last = the position of the pawn that moved 2
+
+            if (last.getY() == place.getY()) { // are they on the same y
+
+                if (Math.abs(last.getX() - place.getX()) == 1) {   // is the pawn right next to us?
+
+                    int direction = (colour == 0) ? -1 : 1;  // if white go up(-1) if black go down(1)
+
+                    moves.add(new Point(
+
+                            last.getX(),
+                            place.getY() + direction,
+                            true,     // capture
+                            false,    // en passant
+                            false,
+                            true// en passant
+                        ));
+
+                }
+            }
+        }
+
 
         return moves;
     }
@@ -88,8 +117,12 @@ public class Pawn extends Piece {
             this.moved = 1;
         if(new_place.isPawn_twice())    // did it move twice
             this.moved = 2;
-    }
 
+    }
+    @Override
+    public Piece copy(Player player) {
+        return new Pawn(this, player);
+    }
     public void cancel_twice(){     // turns off the lamp that signals if un poissant is possible
         this.moved = 1;
     }

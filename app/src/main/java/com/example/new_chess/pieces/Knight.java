@@ -12,6 +12,9 @@ public class Knight extends Piece{
     public Knight(Point place, int colour, Player player, int ID){
         super(place, colour, player, ID);
     }
+    public Knight(Knight other, Player player){
+        super(other, player);
+    }
 
     @Override
     public List<Point> getMoves(Board current_board, boolean trigger, Player opponent) {
@@ -59,6 +62,12 @@ public class Knight extends Piece{
         }
         return moves;
     }
+
+    @Override
+    public Piece copy(Player player) {
+        return new Knight(this, player);
+    }
+
 
     @Override
     public void move(Point newPlace) {

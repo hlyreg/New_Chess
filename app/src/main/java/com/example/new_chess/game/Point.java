@@ -5,6 +5,7 @@ public class Point {
     private int y;
     private boolean takes;  // is it a move that kills a piece?
     private boolean pawn_twice;  // is it a move where a pawn moves twice?
+    private boolean enPassant;
     private boolean castling;   // is it a move where castling is triggered?
 
     public Point (Point point){
@@ -12,6 +13,7 @@ public class Point {
         this.y = point.getY();
         takes = point.isTakes();
         pawn_twice = point.isPawn_twice();
+        enPassant = point.isEnPassant();
         castling = point.isCastling();
     }
 
@@ -21,6 +23,7 @@ public class Point {
         takes = false;      // does the move kill a piece
         pawn_twice = false;     // does a pawn move twice, so that un poissant is possible
         castling = false;
+        enPassant = false;
 
     }
     public Point(int x, int y, boolean takes){
@@ -28,6 +31,7 @@ public class Point {
         this.y = y;
         this.takes = takes;
         castling = false;
+        enPassant = false;
     }
 
     public Point(int x, int y, boolean takes, boolean twice){
@@ -36,6 +40,7 @@ public class Point {
         this.takes = takes;
         this.pawn_twice = twice;
         castling = false;
+        enPassant = false;
     }
 
     public Point(int x, int y, boolean takes, boolean twice, boolean castling){
@@ -44,6 +49,16 @@ public class Point {
         this.takes = takes;
         this.pawn_twice = twice;
         this.castling = castling;
+        enPassant = false;
+    }
+
+    public Point(int x, int y, boolean takes, boolean twice, boolean castling, boolean enPassant){
+        this.x = x;
+        this.y = y;
+        this.takes = takes;
+        this.pawn_twice = twice;
+        this.castling = castling;
+        this.enPassant = enPassant;
     }
 
     public boolean compare(int x, int y){
@@ -70,6 +85,7 @@ public class Point {
     public boolean isPawn_twice() {
         return pawn_twice;
     }
+    public boolean isEnPassant(){return enPassant;}
     public boolean isCastling() {
         return castling;
     }

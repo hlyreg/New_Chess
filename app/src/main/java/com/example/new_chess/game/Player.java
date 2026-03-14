@@ -16,8 +16,11 @@ public class Player {
     public Player(int colour){
         this.colour = colour;
         setPieces();
+    }
 
-
+    public Player(int colour, boolean set){
+        this.colour = colour;
+        this.pieces = new Piece[16];
     }
 
     private void setPieces(){
@@ -34,8 +37,8 @@ public class Player {
                 else if(x == 2 || x == 5)
                     pieces[x+8] = new Bishop(new Point(x, 7), colour, this, x+8);
             }
-            pieces[11] = new Queen(new Point(3, 7), colour, this, 14);
-            pieces[12] = new King(new Point(4, 7), colour, this, 15);
+            pieces[11] = new Queen(new Point(3, 7), colour, this, 11);
+            pieces[12] = new King(new Point(4, 7), colour, this, 12);
         }
 
         else{
@@ -51,8 +54,8 @@ public class Player {
                 else if(x == 2 || x == 5)
                     pieces[x+8] = new Bishop(new Point(x, 0), colour, this, x+8);
             }
-            pieces[11] = new Queen(new Point(3, 0), colour, this, 14);
-            pieces[12] = new King(new Point(4, 0), colour, this, 15);
+            pieces[11] = new Queen(new Point(3, 0), colour, this, 11);
+            pieces[12] = new King(new Point(4, 0), colour, this, 12);
         }
     }
 
@@ -60,17 +63,10 @@ public class Player {
         return this.pieces;
     }
 
-    public Piece getPiece(Point point){
-        int x = point.getX();
-        int y = point.getY();
-        if(x<8 && x>0 && y<8 && y>0) {
-            for (Piece p : pieces) {
-                if (p.isAlive() && p.getPlace().compare(x, y))
-                    return p;
-            }
-        }
-        return null;
+    public int getColour(){
+        return this.colour;
     }
+
 
 }
 

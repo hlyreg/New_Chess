@@ -1,46 +1,79 @@
 package com.example.new_chess.game;
 
+import com.example.new_chess.pieces.Pawn;
 import com.example.new_chess.pieces.Piece;
+import com.example.new_chess.pieces.Queen;
 
 import java.util.Stack;
 
 public class GameState {
-    private final Stack<Board> past = new Stack<>();
-    private final Stack<Board> future = new Stack<>();
+    private final Stack<Board> pastBoards = new Stack<>();
+    private final Stack<Board> futureBoards = new Stack<>();
 
-    private Board current;
+    private Board currentBoard;
 
     public GameState(Board start) {
-        current = start;
+        currentBoard = start;
     }
 
     public Board getBoard() {
-        return current;
+        return currentBoard;
     }
 
     public void makeMove(Piece piece, Point move) {
-        past.push(current);
-        current = new Board(current, piece.getPlace(), move, piece);
-        future.clear();
+        pastBoards.push(currentBoard);
+
+        // create new board with piece copies & updated positions
+        currentBoard = new Board(currentBoard, piece.getPlace(), move, piece);
+        futureBoards.clear();
+
+        // Check pawn promotion
+        Piece movedPiece = currentBoard.getBoard()[move.getX()][move.getY()];
+        if (movedPiece instanceof Pawn) {
+            if (movedPiece.getColour() == 0 && move.getY() == 0) {
+                promotePawn(move);
+            }
+
+            if (movedPiece.getColour() == 1 && move.getY() == 7) {
+                promotePawn(move);
+            }
+        }
     }
 
+    private void promotePawn(Point pos) {
+
+        Piece pawn = currentBoard.getBoard()[pos.getX()][pos.getY()];
+        Player owner = pawn.getPlayer();
+
+        //for now we make the pawn automatically upgrade to a queen
+        Queen queen = new Queen(pos, pawn.getColour(), owner, pawn.getID());
+
+        currentBoard.getBoard()[pos.getX()][pos.getY()] = queen;
+
+        owner.getPieces()[pawn.getID()] = queen;
+    }
+
+
+
+
+
     public boolean canUndo() {
-        return !past.isEmpty();
+        return !pastBoards.isEmpty();
     }
 
     public boolean canRedo() {
-        return !future.isEmpty();
+        return !futureBoards.isEmpty();
     }
 
     public void undo() {
         if (!canUndo()) return;
-        future.push(current);
-        current = past.pop();
+        futureBoards.push(currentBoard);
+        currentBoard = pastBoards.pop();
     }
 
     public void redo() {
         if (!canRedo()) return;
-        past.push(current);
-        current = future.pop();
+        pastBoards.push(currentBoard);
+        currentBoard = futureBoards.pop();
     }
 }

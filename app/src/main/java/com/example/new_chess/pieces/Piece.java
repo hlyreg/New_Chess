@@ -22,8 +22,18 @@ public abstract class Piece {
         this.isAlive = true;
 
     }
+
+    protected Piece(Piece other, Player player){
+        this.place = other.place;
+        this.player = player;
+        this.colour = other.colour;
+        this.ID = other.ID;
+        this.isAlive = other.isAlive;
+    }
+
     public abstract List<Point> getMoves(Board board, boolean trigger, Player opponent);
 
+    public abstract Piece copy(Player player);  // for copy we need to reinstate what player it is connected to because they are constantly being remade
     public abstract void move(Point newPlace);
 
     public void kill(){
