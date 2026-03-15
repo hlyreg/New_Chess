@@ -50,7 +50,7 @@ public class Knight extends Piece{
                     if(!isEmpty(board, x+num, y-1) && !isComrade(board, x+num, y-1) )
                         moves.add(new Point(x+num, y-1, true));
                 }
-                else if(y+1 < 8){
+                if(y+1 < 8){
                     if(isEmpty(board, x+num, y+1) )
                         moves.add(new Point(x+num, y+1));
 

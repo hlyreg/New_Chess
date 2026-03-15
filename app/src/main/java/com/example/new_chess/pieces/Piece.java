@@ -45,9 +45,13 @@ public abstract class Piece {
     }
 
     public boolean isComrade(Piece[][] board, int x, int y){
-        int my_player = this.colour;
-        Piece piece = board[x][y];
-        return my_player == piece.getColour();
+
+        if(board[x][y] != null){
+            int my_player = this.colour;
+            Piece piece = board[x][y];
+            return my_player == piece.getColour();
+        }
+        return false;
     }
 
     public boolean isCheck(Player opponent, int id, Point move, Board board){
@@ -60,7 +64,7 @@ public abstract class Piece {
             kingPlace = move; // king moves, its new location is move
         }
 
-        return newBoardCheck.isSquareAttacked(kingPlace.getY(), kingPlace.getX(), opponent);
+        return newBoardCheck.isSquareAttacked(kingPlace.getY(), kingPlace.getX(), newBoardCheck.getPlayer(opponent.getColour()));
     }
     public List<Point> getLegalMoves(Board board, boolean two_step) {
         List<Point> legalMoves = new ArrayList<>();

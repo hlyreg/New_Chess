@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.new_chess" />
+                  <option name="mobileSdkAppId" value="1:828975016062:android:14f0e3934b9dca0da4102f" />
+                  <option name="projectId" value="chessapp-b9f36" />
+                  <option name="projectNumber" value="828975016062" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

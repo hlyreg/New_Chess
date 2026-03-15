@@ -34,8 +34,12 @@ public class King extends Piece{
             for(int width = -1; width < 2; width++){
                 tryY = y+height;
                 tryX = x+width;
-                if(tryX < 8 && tryY < 8 && tryX >= 0 && tryY >= 0 && (isEmpty(board, tryX, tryY) || !isComrade(board, tryX, tryY ))){
-                    moves.add(new Point(tryX, tryY));
+                if(tryX < 8 && tryY < 8 && tryX >= 0 && tryY >= 0){
+                    if(isEmpty(board, tryX, tryY))
+                        moves.add(new Point(tryX, tryY));
+                    else if(!isComrade(board, tryX, tryY ))
+                        moves.add(new Point(tryX, tryY, true));
+
                 }
             }
         }
@@ -68,6 +72,7 @@ public class King extends Piece{
                 rook.move(new Point(3, move.getY()));
             }
         }
+        moved = true;
     }
 
 

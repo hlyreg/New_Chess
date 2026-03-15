@@ -193,7 +193,9 @@ public class Board {
     public Player getPlayer(int colour) {
         if(colour ==0)
             return white;
-        return black;
+        if(colour == 1)
+            return black;
+        return null;
     }
 
     public boolean canCastleKingSide(King king) {
