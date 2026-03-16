@@ -23,12 +23,11 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/LogInButton"
+        android:id="@+id/playFriendButton"
         android:layout_width="241dp"
         android:layout_height="55dp"
         android:backgroundTint="#94B4C1"
         android:fontFamily="sans-serif-black"
-        android:onClick="playOnline"
         android:text="Play With Friend"
         android:textColor="#213448"
         android:textSize="20sp"
@@ -36,7 +35,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.449" />
+        app:layout_constraintVertical_bias="0.54" />
 
     <Button
         android:id="@+id/SignUpButton"
@@ -50,10 +49,9 @@
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.549" />
+        app:layout_constraintVertical_bias="0.443" />
 
     <Button
         android:id="@+id/PlayAloneButton"
@@ -86,4 +84,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.245" />
+
+    <EditText
+        android:id="@+id/usernameInput"
+        android:layout_width="241dp"
+        android:layout_height="55dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:hint="enter other player's username"
+        android:textColor="#213448"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.64" />
+
+    <Button
+        android:id="@+id/searchUserButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#94B4C1"
+        android:fontFamily="sans-serif-black"
+        android:text="search"
+        android:textColor="#213448"
+        android:visibility="gone"
+        android:onClick="playOnline"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.73" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

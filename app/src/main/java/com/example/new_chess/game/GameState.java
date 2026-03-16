@@ -1,6 +1,6 @@
 package com.example.new_chess.game;
 
-import com.example.new_chess.MainActivity;
+import com.example.new_chess.LocalGameActivity;
 import com.example.new_chess.pieces.Pawn;
 import com.example.new_chess.pieces.Piece;
 import com.example.new_chess.pieces.Queen;
@@ -52,9 +52,6 @@ public class GameState {
 
     }
 
-    public void setPromotionListener(PromotionListener listener) {
-        this.promotionListener = listener;
-    }
 
     public boolean canUndo() {
         return !pastBoards.isEmpty();

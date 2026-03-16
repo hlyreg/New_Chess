@@ -46,7 +46,7 @@ public class StartActivity extends AppCompatActivity {
     }
 
     public void playLocal(View v){
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, LoginActivity.class));
     }
 
 

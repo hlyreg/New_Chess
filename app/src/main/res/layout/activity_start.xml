@@ -23,7 +23,7 @@
       app:layout_constraintTop_toTopOf="parent" />
 
   <Button
-      android:id="@+id/LogInButton"
+      android:id="@+id/playFriendButton"
       android:layout_width="241dp"
       android:layout_height="55dp"
       android:backgroundTint="#94B4C1"

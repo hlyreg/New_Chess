@@ -37,6 +37,7 @@ public class ChessBoardView extends View {
     private Paint paint = new Paint();
     private Paint checkGlowPaint = new Paint();
     private Paint highlightPaint = new Paint();  // the colour place holder
+    private OnMoveListener moveListener;
     private float squareSize;
     private GameState game;
     private Map<Class<? extends Piece>, Bitmap[]> pieceBitmaps;
@@ -276,6 +277,8 @@ public class ChessBoardView extends View {
         });
     }
 
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -314,8 +317,9 @@ public class ChessBoardView extends View {
         // Piece already selected → try to move
         for (Point move : legalMoves) {
             if (move.compare(tap.getX(), tap.getY())) {
-                game.makeMove(selectedPiece, move);
-                whiteToMove = !whiteToMove;   // switch the whose turn it is
+                if(moveListener != null){
+                    moveListener.onMove(selectedPiece, move);
+                }
                 break;
             }
         }
@@ -340,9 +344,18 @@ public class ChessBoardView extends View {
         int y = (int) (sy / squareSize);
         return new Point(x, y);
     }
+    public void switchTurn(){
+        whiteToMove = !whiteToMove;
+    }
 
+    //______________________________________________________________________
+    public interface OnMoveListener {
+        void onMove(Piece piece, Point move);
+    }
 
-
+    public void setMoveListener(OnMoveListener listener){
+        this.moveListener = listener;
+    }
 
 
 

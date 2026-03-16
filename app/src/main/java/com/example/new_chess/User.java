@@ -1,7 +1,9 @@
 package com.example.new_chess;
 
-public class User {
+import android.widget.Button;
+import android.widget.EditText;
 
+public class User {
     public String username;
     public String email;
     public String password;

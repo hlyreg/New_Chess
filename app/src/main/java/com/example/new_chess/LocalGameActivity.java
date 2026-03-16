@@ -1,7 +1,6 @@
 package com.example.new_chess;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
@@ -18,9 +17,7 @@ import com.example.new_chess.pieces.*;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity {
+public class LocalGameActivity extends AppCompatActivity {
     private GameState game;
     private ChessBoardView chessBoardView;
 
@@ -29,17 +26,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_local_game);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        DatabaseReference database =
-                FirebaseDatabase.getInstance().getReference();
-
-        database.child("test").setValue("Hello Firebase!");
 
            chessBoardView = findViewById(R.id.chessBoard);
         Player white = new Player(0);
@@ -54,6 +47,15 @@ public class MainActivity extends AppCompatActivity {
             public void onPawnPromotion(Piece pawn, Point move) {
                 showPromotionMenu(pawn, move);
             }
+        });
+
+        chessBoardView.setMoveListener((piece, move) -> {
+
+            game.makeMove(piece, move);
+
+            chessBoardView.switchTurn();   // change turn
+
+            chessBoardView.invalidate();
         });
     }
 
@@ -96,5 +98,8 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
+
+
 
 }
