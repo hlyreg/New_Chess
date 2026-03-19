@@ -2,6 +2,7 @@ package com.example.new_chess;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -26,7 +28,6 @@ import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
     FirebaseAuth auth;
-    EditText usernameSearch;
     Button searchButton;
     private EditText usernameInput;
     private Button searchUserButton;
@@ -58,6 +59,9 @@ public class HomeActivity extends AppCompatActivity {
             usernameInput.requestFocus();
 
         });
+
+        listenForInvites();
+        listenForAcceptedInvites();
 
         }
 
@@ -94,7 +98,7 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         public void playOnline(View v){
-            String username = usernameSearch.getText().toString();
+            String username = usernameInput.getText().toString();
             searchForPlayer(username);
         }
 
@@ -117,7 +121,8 @@ public class HomeActivity extends AppCompatActivity {
 
                             String opponentUID = user.getKey();
 
-                            createGame(opponentUID);
+                            sendInvite(opponentUID);
+                            Toast.makeText(getApplicationContext(),"Invite sent!", Toast.LENGTH_SHORT).show();
 
                             break;
                         }
@@ -130,22 +135,22 @@ public class HomeActivity extends AppCompatActivity {
                 });
     }
 
-    private void createGame(String opponentUID){
+    private void sendInvite(String opponentUID){
 
         String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        DatabaseReference gamesRef = FirebaseDatabase.getInstance().getReference("games");
+        DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
 
-        String gameID = gamesRef.push().getKey();
+        String inviteID = invitesRef.push().getKey();
 
-        Map<String,Object> game = new HashMap<>();
+        Map<String,Object> invite = new HashMap<>();
+        invite.put("from", myUID);
+        invite.put("to", opponentUID);
+        invite.put("status", "pending");
+        invite.put("seen", false);
+        invite.put("timestamp", System.currentTimeMillis());
 
-        game.put("white", myUID);
-        game.put("black", opponentUID);
-
-        gamesRef.child(gameID).setValue(game);
-
-        startGame(gameID);
+        invitesRef.child(inviteID).setValue(invite);
     }
 
     private void startGame(String gameID){
@@ -153,7 +158,6 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = new Intent(this, OnlineGameActivity.class);
         intent.putExtra("GAME_ID", gameID);
         startActivity(intent);
-
     }
 
         public void logout(View v){
@@ -161,4 +165,172 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(new Intent(this, StartActivity.class));
             finish();
         }
+
+    private void listenForInvites(){
+
+        String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
+
+        invitesRef.orderByChild("to").equalTo(myUID)
+                .addValueEventListener(new ValueEventListener() { //changed maybe temporarily from .addListenerForSingleValueEvent
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        Log.d("INVITE_DEBUG", "Listener triggered");
+
+                        for(DataSnapshot inviteSnap : snapshot.getChildren()){
+                            Log.d("INVITE_DEBUG", inviteSnap.toString());
+
+                            String status = inviteSnap.child("status").getValue(String.class);
+
+                            if("pending".equals(status)){
+
+                                Boolean seen = inviteSnap.child("seen").getValue(Boolean.class);
+
+                                if(seen == null || !seen){
+                                    markInviteSeen(inviteSnap.getKey());
+                                    showInvitePopup(inviteSnap);
+                                }
+                            }
+
+                            long now = System.currentTimeMillis();
+                            Long timestamp = inviteSnap.child("timestamp").getValue(Long.class);
+
+                            if(timestamp != null && now - timestamp > 30000){
+                                // expire invite
+                                expireInvite(inviteSnap.getKey());
+                                continue;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {}
+                });
     }
+
+    private void showInvitePopup(DataSnapshot inviteSnap){
+
+        String fromUID = inviteSnap.child("from").getValue(String.class);
+        String inviteID = inviteSnap.getKey();
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(fromUID)
+                .child("username");
+
+        userRef.get().addOnSuccessListener(snapshot -> {
+
+            String username = snapshot.getValue(String.class);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Game Invite")
+                    .setMessage(username + " challenged you!")
+
+                    .setPositiveButton("Accept", (dialog, which) -> {
+                        acceptInvite(inviteID, fromUID);
+                    })
+
+                    .setNegativeButton("Decline", (dialog, which) -> {
+                        declineInvite(inviteID);
+                    })
+
+                    .show();
+        });
+    }
+
+    private void listenForAcceptedInvites(){
+
+        String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
+
+        invitesRef.orderByChild("from").equalTo(myUID)
+                .addValueEventListener(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+
+                        for(DataSnapshot inviteSnap : snapshot.getChildren()){
+
+                            String status = inviteSnap.child("status").getValue(String.class);
+                            Boolean consumed = inviteSnap.child("consumed").getValue(Boolean.class);
+                            String gameID = inviteSnap.child("gameID").getValue(String.class);
+                            String inviteID = inviteSnap.getKey();
+
+                            if("accepted".equals(status) && (consumed == null || !consumed)){
+
+                                if(gameID != null){
+
+                                    markInviteConsumed(inviteID);
+
+                                    // prevent multiple launches
+                                    if(!isFinishing()){
+                                        startGame(gameID);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override public void onCancelled(DatabaseError error) {}
+                });
+    }
+    private void acceptInvite(String inviteID, String opponentUID){
+
+        String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+
+        String gameID = rootRef.child("games").push().getKey();
+
+        Map<String,Object> game = new HashMap<>();
+        game.put("white", opponentUID);
+        game.put("black", myUID);
+
+        rootRef.child("games").child(gameID).setValue(game);
+
+        // store gameID in invite
+        rootRef.child("invites").child(inviteID).child("gameID").setValue(gameID);
+
+        rootRef.child("invites").child(inviteID).child("status").setValue("accepted");
+
+        markInviteConsumed(inviteID);
+        startGame(gameID);
+    }
+    private void markInviteConsumed(String inviteID){
+        FirebaseDatabase.getInstance()
+                .getReference("invites")
+                .child(inviteID)
+                .child("consumed")
+                .setValue(true);
+    }
+
+    private void declineInvite(String inviteID){
+        FirebaseDatabase.getInstance()
+                .getReference("invites")
+                .child(inviteID)
+                .child("status")
+                .setValue("declined");
+    }
+
+    private void markInviteSeen(String inviteID){
+        FirebaseDatabase.getInstance()
+                .getReference("invites")
+                .child(inviteID)
+                .child("seen")
+                .setValue(true);
+    }
+
+    private void expireInvite(String inviteID){
+        FirebaseDatabase.getInstance()
+                .getReference("invites")
+                .child(inviteID)
+                .child("status")
+                .setValue("expired");
+    }
+
+}
+
+

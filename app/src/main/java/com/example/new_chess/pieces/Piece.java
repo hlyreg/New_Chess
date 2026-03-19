@@ -59,7 +59,7 @@ public abstract class Piece {
         Board newBoardCheck = new Board(board, moving.getPlace(), move, moving); // simulate the move
 
         // Find your king's position after the move
-        Point kingPlace = player.getPieces()[12].getPlace();
+        Point kingPlace = newBoardCheck.getPlayer(player.getColour()).getPieces()[12].getPlace();
         if (moving instanceof King) {
             kingPlace = move; // king moves, its new location is move
         }
@@ -67,6 +67,7 @@ public abstract class Piece {
         return newBoardCheck.isSquareAttacked(kingPlace.getY(), kingPlace.getX(), newBoardCheck.getPlayer(opponent.getColour()));
     }
     public List<Point> getLegalMoves(Board board, boolean two_step) {
+
         List<Point> legalMoves = new ArrayList<>();
 
         Player opponent = board.getOpponent(this);

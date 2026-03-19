@@ -198,6 +198,12 @@ public class Board {
         return null;
     }
 
+    public Piece getPieceById(int id, boolean isWhite){
+        if(isWhite)
+            return white.getPieces()[id];
+        return black.getPieces()[id];
+    }
+
     public boolean canCastleKingSide(King king) {
 
         int y = king.getPlace().getY();

@@ -75,7 +75,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-black"
-        android:text="hi"
         android:textColor="#213448"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

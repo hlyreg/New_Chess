@@ -5,6 +5,8 @@ import com.example.new_chess.pieces.Pawn;
 import com.example.new_chess.pieces.Piece;
 import com.example.new_chess.pieces.Queen;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 public class GameState {
@@ -48,8 +50,57 @@ public class GameState {
 
         board.getBoard()[pawnP.getX()][pawnP.getY()] = null;
         board.getBoard()[newP.getX()][newP.getY()] = newPiece;
+        board.getPlayer(newPiece.getColour()).getPieces()[newPiece.getID()] = newPiece;
 
 
+    }
+
+    public int checkMate(){  // returns the colour of the player that lost
+        Point checkPlace = getKingInCheck();
+        Board board = this.getBoard();
+
+        // if the king is in check, and none of the pieces can move, then the checked player loses.
+        if(checkPlace != null){
+            int color = board.getBoard()[checkPlace.getX()][checkPlace.getY()].getColour();
+            Piece[] threatenedPieces = board.getPlayer(color).getPieces();
+            List<Point> moves = new ArrayList<>();
+
+            for(Piece piece : threatenedPieces){  //check if each piece can't move
+                if(piece != null) {
+                    moves.addAll(piece.getLegalMoves(board, board.wasLastMovePawnTwo()));
+                }
+                }
+            if(moves.isEmpty()) {
+                return color;
+            }
+        }
+        return -1; // if no one lost return -1
+    }
+
+    public Point getKingInCheck() {
+
+        Player white = currentBoard.getPlayer(0);
+        Player black = currentBoard.getPlayer(1);
+
+        Piece whiteKing = white.getPieces()[12];
+        Piece blackKing = black.getPieces()[12];
+
+        if(currentBoard.isSquareAttacked(
+                whiteKing.getPlace().getY(),
+                whiteKing.getPlace().getX(),
+                black)){
+            return whiteKing.getPlace();
+        }
+
+
+        if(currentBoard.isSquareAttacked(
+                blackKing.getPlace().getY(),
+                blackKing.getPlace().getX(),
+                white)){
+            return blackKing.getPlace();
+        }
+
+        return null;
     }
 
 

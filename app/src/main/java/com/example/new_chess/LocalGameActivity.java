@@ -1,5 +1,6 @@
 package com.example.new_chess;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -53,6 +54,11 @@ public class LocalGameActivity extends AppCompatActivity {
 
             game.makeMove(piece, move);
 
+            int isCheckmate = game.checkMate();
+            if(isCheckmate != -1){
+                showWinDialog(isCheckmate);
+            }
+
             chessBoardView.switchTurn();   // change turn
 
             chessBoardView.invalidate();
@@ -96,6 +102,27 @@ public class LocalGameActivity extends AppCompatActivity {
                     chessBoardView.invalidate();
 
                 })
+                .show();
+    }
+
+    private void showWinDialog(int loser){
+
+        String message = (loser == 1) ? "White wins!" : "Black wins!";
+
+        new AlertDialog.Builder(this)
+                .setTitle("Game Over")
+                .setMessage(message)
+
+                .setCancelable(false)
+
+                .setPositiveButton("Back to Home", (dialog, which) -> {
+
+                    Intent intent = new Intent(this, HomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+
+                })
+
                 .show();
     }
 

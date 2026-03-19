@@ -45,8 +45,8 @@ public class ChessBoardView extends View {
     private int selectedY = -1; // vertical
     private Piece selectedPiece = null;   // what piece is currently selected
     private List<Point> legalMoves = new ArrayList<>();
-
     private boolean whiteToMove = true;  // is it whites turn?
+    private boolean myTurn;
 
 
 
@@ -186,7 +186,7 @@ public class ChessBoardView extends View {
     }
     private void drawCheck(Canvas canvas) {
 
-        Point kingSquare = getKingInCheck();
+        Point kingSquare = game.getKingInCheck();
         if (kingSquare == null) return;
 
         float centerX = kingSquare.getX() * squareSize + squareSize / 2f;
@@ -214,32 +214,6 @@ public class ChessBoardView extends View {
         checkGlowPaint.setShader(null); // reset paint
     }
 
-    private Point getKingInCheck() {
-
-        Board board = game.getBoard();
-
-        Player white = board.getPlayer(0);
-        Player black = board.getPlayer(1);
-
-        Piece whiteKing = white.getPieces()[12];
-        Piece blackKing = black.getPieces()[12];
-
-        if(board.isSquareAttacked(
-                whiteKing.getPlace().getY(),
-                whiteKing.getPlace().getX(),
-                black)){
-            return whiteKing.getPlace();
-        }
-
-        if(board.isSquareAttacked(
-                blackKing.getPlace().getY(),
-                blackKing.getPlace().getX(),
-                white)){
-            return blackKing.getPlace();
-        }
-
-        return null;
-    }
 
 //------------------------------------------------------------------
 
@@ -307,7 +281,7 @@ public class ChessBoardView extends View {
 
         // No piece selected yet → select one
         if (selectedPiece == null) {
-            if (tappedPiece != null && tappedPiece.getColour() == (whiteToMove ? 0 : 1)) {
+            if (tappedPiece != null && tappedPiece.getColour() == (whiteToMove ? 0 : 1) && myTurn) {
                 selectedPiece = tappedPiece;
                 legalMoves = selectedPiece.getLegalMoves(game.getBoard(), game.getBoard().wasLastMovePawnTwo());
             }
@@ -349,12 +323,18 @@ public class ChessBoardView extends View {
     }
 
     //______________________________________________________________________
+
+
     public interface OnMoveListener {
         void onMove(Piece piece, Point move);
     }
 
     public void setMoveListener(OnMoveListener listener){
         this.moveListener = listener;
+    }
+
+    public void setMyTurn(boolean turn){
+        this.myTurn = turn;
     }
 
 
