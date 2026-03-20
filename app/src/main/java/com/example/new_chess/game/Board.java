@@ -45,7 +45,9 @@ public class Board {
 
     }
 
+
     public Board(Board current_board, Point current, Point change, Piece moving){    // a constructor to make a new board with a change in position because of a move that was made
+
         this.board =  new Piece[8][8];
 
         white = new Player(0, true);

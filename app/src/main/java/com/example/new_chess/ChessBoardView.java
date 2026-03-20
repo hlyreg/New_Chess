@@ -46,7 +46,7 @@ public class ChessBoardView extends View {
     private Piece selectedPiece = null;   // what piece is currently selected
     private List<Point> legalMoves = new ArrayList<>();
     private boolean whiteToMove = true;  // is it whites turn?
-    private boolean myTurn;
+    private boolean isUserBlack = false;
 
 
 
@@ -57,8 +57,15 @@ public class ChessBoardView extends View {
     }
 
 
+
     public void setBoard(Board board, GameState game) {
         this.game = game;
+        invalidate();
+    }
+
+    public void setBoard(Board board, GameState game, boolean isBlack) {
+        this.game = game;
+        this.isUserBlack = isBlack;
         invalidate();
     }
 
@@ -66,15 +73,14 @@ public class ChessBoardView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        Paint highlightPaint = new Paint();
         highlightPaint.setColor(Color.parseColor("#88FFD54F")); // yellow-ish
 
 
         squareSize = getWidth() / 8f;
 
         for (Point p : legalMoves) {
-            float left = p.getX() * squareSize;
-            float top =  p.getY() * squareSize;
+            float left = displayX(p.getX()) * squareSize;
+            float top  = displayY(p.getY()) * squareSize;
             canvas.drawRect(
                     left,
                     top,
@@ -103,10 +109,10 @@ public class ChessBoardView extends View {
                 }
 
                 canvas.drawRect(
-                        x * squareSize,
-                        y * squareSize,
-                        (x + 1) * squareSize,
-                        (y + 1) * squareSize,
+                        displayX(x) * squareSize,
+                        displayY(y) * squareSize,
+                        (displayX(x) + 1) * squareSize,
+                        (displayY(y) + 1) * squareSize,
                         paint
                 );
             }
@@ -128,8 +134,8 @@ public class ChessBoardView extends View {
 
                 Bitmap bitmap = pair[place.getColour()];
 
-                float left = x * squareSize;
-                float top = y * squareSize;
+                float left = displayX(x) * squareSize;
+                float top  = displayY(y) * squareSize;
 
                 Bitmap scaled = Bitmap.createScaledBitmap(
                         bitmap,
@@ -149,10 +155,10 @@ public class ChessBoardView extends View {
         highlightPaint.setColor(Color.parseColor("#90926F54"));
 
         canvas.drawRect(
-                selectedX * squareSize,
-                selectedY * squareSize,
-                (selectedX + 1) * squareSize,
-                (selectedY + 1) * squareSize,
+                displayX(selectedX) * squareSize,
+                displayY(selectedY) * squareSize,
+                (displayX(selectedX)+1) * squareSize,
+                (displayY(selectedY) + 1) * squareSize,
                 highlightPaint
         );
     }
@@ -162,8 +168,8 @@ public class ChessBoardView extends View {
 
         for (Point p : legalMoves) {
 
-            float left = p.getX() * squareSize;
-            float top  = p.getY() * squareSize;
+            float left = displayX(p.getX()) * squareSize;
+            float top  = displayY(p.getY()) * squareSize;
 
             canvas.drawCircle(
                     left + squareSize / 2,
@@ -281,7 +287,7 @@ public class ChessBoardView extends View {
 
         // No piece selected yet → select one
         if (selectedPiece == null) {
-            if (tappedPiece != null && tappedPiece.getColour() == (whiteToMove ? 0 : 1) && myTurn) {
+            if (tappedPiece != null && tappedPiece.getColour() == (whiteToMove ? 0 : 1)) {
                 selectedPiece = tappedPiece;
                 legalMoves = selectedPiece.getLegalMoves(game.getBoard(), game.getBoard().wasLastMovePawnTwo());
             }
@@ -316,6 +322,12 @@ public class ChessBoardView extends View {
     private Point screenToBoard(float sx, float sy) {
         int x = (int) (sx / squareSize);
         int y = (int) (sy / squareSize);
+
+        if (isUserBlack) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+
         return new Point(x, y);
     }
     public void switchTurn(){
@@ -333,8 +345,15 @@ public class ChessBoardView extends View {
         this.moveListener = listener;
     }
 
-    public void setMyTurn(boolean turn){
-        this.myTurn = turn;
+    public boolean isWhiteTurn(){
+        return whiteToMove;
+    }
+    private int displayX(int x) {
+        return isUserBlack ? 7 - x : x;
+    }
+
+    private int displayY(int y) {
+        return isUserBlack ? 7 - y : y;
     }
 
 

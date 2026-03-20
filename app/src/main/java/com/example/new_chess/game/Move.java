@@ -4,24 +4,24 @@ public class Move {
     private int pieceID;
     private Point change;
     private Point before;
-    private boolean promotion;
-    private boolean AmIWhite;
+    private String promotion;
+    private boolean whiteMove;
 
     public Move(){}
-    public Move(int pieceID, Point before,  Point change, boolean promotion, boolean AmIWhite){
+    public Move(int pieceID, Point before,  Point change, String promotion, boolean AmIWhite){
         this.pieceID = pieceID;
         this.change = change;
         this.before = before;
         this.promotion = promotion;
-        this.AmIWhite = AmIWhite;
+        this.whiteMove = AmIWhite;
     }
 
     public int getPieceID(){
         return pieceID;
     }
 
-    public boolean isAmIWhite() {
-        return AmIWhite;
+    public boolean isWhiteMove() {
+        return whiteMove;
     }
 
     public Point getChange(){
@@ -32,7 +32,7 @@ public class Move {
         return before;
     }
 
-    public boolean getPromotion(){
+    public String getPromotion(){
         return promotion;
     }
 

@@ -39,6 +39,24 @@ public class GameState {
         }
     }
 
+    public void makeMove(Piece piece, Point move, boolean toPromote) {
+        pastBoards.push(currentBoard);
+
+        // create new board with piece copies & updated positions
+        currentBoard = new Board(currentBoard, piece.getPlace(), move, piece);
+        futureBoards.clear();
+
+        // Check pawn promotion
+        if(toPromote){
+            if (piece instanceof Pawn && (move.getY() == 0 || move.getY() == 7)) {
+                if (promotionListener != null) {
+                    promotionListener.onPawnPromotion(piece, move);
+                }
+
+            }
+        }
+    }
+
 
 
     public void promotePawn(Piece pawn, Piece newPiece){

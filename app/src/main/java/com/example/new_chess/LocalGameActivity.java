@@ -37,11 +37,11 @@ public class LocalGameActivity extends AppCompatActivity {
 
            chessBoardView = findViewById(R.id.chessBoard);
         Player white = new Player(0);
-        Player black = new Player(1);
+        Player black = new Player(1);  // get rid of true
 
-        Board board = new Board(white, black);
+        Board board = new Board(white, black); // get rid of true
         game = new GameState(new Board(board.getPlayer(0), board.getPlayer(1)));
-        chessBoardView.setBoard(board, game);
+        chessBoardView.setBoard(board, game);  // get rid of true
 
         game.setPawnPromotionListener(new GameState.PromotionListener() {
             @Override

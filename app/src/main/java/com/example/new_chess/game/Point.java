@@ -8,6 +8,8 @@ public class Point {
     private boolean enPassant;
     private boolean castling;   // is it a move where castling is triggered?
 
+    public Point(){}
+
     public Point (Point point){
         this.x = point.getX();
         this.y = point.getY();

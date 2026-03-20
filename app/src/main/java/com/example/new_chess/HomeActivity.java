@@ -153,10 +153,11 @@ public class HomeActivity extends AppCompatActivity {
         invitesRef.child(inviteID).setValue(invite);
     }
 
-    private void startGame(String gameID){
+    private void startGame(String gameID, boolean isWhite){
 
         Intent intent = new Intent(this, OnlineGameActivity.class);
         intent.putExtra("GAME_ID", gameID);
+        intent.putExtra("PLAYER_COLOR", isWhite);
         startActivity(intent);
     }
 
@@ -267,7 +268,7 @@ public class HomeActivity extends AppCompatActivity {
 
                                     // prevent multiple launches
                                     if(!isFinishing()){
-                                        startGame(gameID);
+                                        startGame(gameID, true);  //theoretically the inviter is always white
                                     }
                                 }
                             }
@@ -297,7 +298,7 @@ public class HomeActivity extends AppCompatActivity {
         rootRef.child("invites").child(inviteID).child("status").setValue("accepted");
 
         markInviteConsumed(inviteID);
-        startGame(gameID);
+        startGame(gameID, false);
     }
     private void markInviteConsumed(String inviteID){
         FirebaseDatabase.getInstance()

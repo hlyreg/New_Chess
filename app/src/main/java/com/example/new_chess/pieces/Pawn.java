@@ -9,12 +9,18 @@ import java.util.List;
 
 public class Pawn extends Piece {
 
+    private boolean isUserBlack = false;
     private int moved;  // if moved = 0, it hasn't moved yet, if it's 2, it moved 2, if it's 1, that means it's moved once since it was 2 or 0.
 
 
     public Pawn(Point place, int colour, Player player, int ID){
         super(place, colour, player, ID);
         this.moved = 0;
+    }
+    public Pawn(Point place, int colour, Player player, int ID, boolean isBlack){
+        super(place, colour, player, ID);
+        this.moved = 0;
+        this.isUserBlack = isBlack;
     }
     public Pawn(Pawn other, Player player){
         super(other, player);
@@ -30,7 +36,7 @@ public class Pawn extends Piece {
 //_______________________________White_______________________________________________
         if(y+1 < 8) {
 
-            if (colour == 1) {
+            if (colour == 1 || (isUserBlack && colour == 0)) {
                 // forward
                 if (isEmpty(board, x, y + 1)) {
                     moves.add(new Point(x, y + 1));
@@ -55,7 +61,7 @@ public class Pawn extends Piece {
 
         if(y-1>= 0) {
 
-            if (colour == 0) {  // changed colour
+            if (colour == 0 || (isUserBlack && colour == 1)) {  // changed colour
 
                 // forward one square
                 if ( isEmpty(board, x, y - 1)) {
@@ -91,6 +97,9 @@ public class Pawn extends Piece {
                 if (Math.abs(last.getX() - place.getX()) == 1) {   // is the pawn right next to us?
 
                     int direction = (colour == 0) ? -1 : 1;  // if white go up(-1) if black go down(1)
+
+                    if(isUserBlack)
+                        direction = (colour == 1) ? -1 : 1;  //flip the direction if it's from black pov
 
                     moves.add(new Point(
 
