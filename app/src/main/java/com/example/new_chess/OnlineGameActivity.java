@@ -237,10 +237,6 @@ public class OnlineGameActivity extends AppCompatActivity {
             return;
         }
 
-        int isCheckmate = gameState.checkMate();
-        if(isCheckmate != -1){
-            showWinDialog(isCheckmate);
-        }
 
         myTurn = true;
 
@@ -251,6 +247,11 @@ public class OnlineGameActivity extends AppCompatActivity {
         }
         else if (move.getPromotion() == null) {
             gameState.makeMove(piece, move.getChange());
+        }
+
+        int isCheckmate = gameState.checkMate();
+        if(isCheckmate != -1){
+            showWinDialog(isCheckmate);
         }
 
         boardView.switchTurn();

@@ -195,8 +195,8 @@ public class ChessBoardView extends View {
         Point kingSquare = game.getKingInCheck();
         if (kingSquare == null) return;
 
-        float centerX = kingSquare.getX() * squareSize + squareSize / 2f;
-        float centerY = kingSquare.getY() * squareSize + squareSize / 2f;
+        float centerX = displayX(kingSquare.getX()) * squareSize + squareSize / 2f;
+        float centerY = displayY(kingSquare.getY()) * squareSize + squareSize / 2f;
 
         float radius = squareSize * 0.8f;
 
