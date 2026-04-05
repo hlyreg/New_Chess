@@ -3,6 +3,9 @@ package com.example.new_chess;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 
@@ -11,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.new_chess.game.Board;
 import com.example.new_chess.game.*;
@@ -33,6 +38,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class OnlineGameActivity extends AppCompatActivity {
 
     private ChessBoardView boardView;
@@ -44,6 +52,17 @@ public class OnlineGameActivity extends AppCompatActivity {
     private boolean myTurn;
     private String promotionType = null;
     private String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+    private TextView topPlayerName;
+    private TextView bottomPlayerName;
+
+    //chat elements
+    private DatabaseReference chatRef;
+    private RecyclerView chatRecycler;
+    private EditText messageInput;
+    private Button sendBtn;
+    private List<ChatMessage> messages = new ArrayList<>();
+    private ChatAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +92,8 @@ public class OnlineGameActivity extends AppCompatActivity {
 
 
         boardView = findViewById(R.id.chessBoard);
+        topPlayerName = findViewById(R.id.topPlayerName);
+        bottomPlayerName = findViewById(R.id.bottomPlayerName);
 
         Player white = new Player(0);
         Player black = new Player(1);
@@ -88,6 +109,38 @@ public class OnlineGameActivity extends AppCompatActivity {
         myTurn = amIWhite;
         gameReady = true;
 
+        setupUsername(0);
+        setupUsername(1);
+
+        //chat setup -----------------------------------------------------
+        chatRef = FirebaseDatabase.getInstance()
+                .getReference("games")
+                .child(gameID)
+                .child("chat");
+
+        listenForMessages();
+
+        chatRecycler = findViewById(R.id.chatRecycler);
+        messageInput = findViewById(R.id.messageInput);
+        sendBtn = findViewById(R.id.sendBtn);
+
+        adapter = new ChatAdapter(messages, myUID);
+        chatRecycler.setAdapter(adapter);
+        chatRecycler.setLayoutManager(new LinearLayoutManager(this));
+
+        sendBtn.setOnClickListener(v -> {
+            String text = messageInput.getText().toString().trim();
+            if(text.isEmpty()) return;
+
+            new Thread(() -> {
+                ChatMessage msg = new ChatMessage(myUID, text, System.currentTimeMillis());
+                chatRef.push().setValue(msg);
+            }).start();
+
+            messageInput.setText("");
+        });
+        //-------------------------------------------------------------------
+        updateTurnUI();
 
         listenForMoves();
 
@@ -125,6 +178,8 @@ public class OnlineGameActivity extends AppCompatActivity {
             myTurn = false;
             promotionType = null;
 
+            updateTurnUI();
+
             boardView.switchTurn();
             boardView.invalidate();
 
@@ -145,41 +200,6 @@ public class OnlineGameActivity extends AppCompatActivity {
                 .child("moves");
 
         movesRef.push().setValue(move);
-    }
-
-    private void setupFirebaseListener() {
-        gameRef.child("lastMove").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.exists()) return;
-
-                Move move = snapshot.getValue(Move.class);
-
-                if (move == null) return;
-
-                // Check if it’s the opponent's move
-                if (move.isWhiteMove() == amIWhite) return;
-
-                Piece piece = null;
-                if (amIWhite) {
-                    piece = gameState.getBoard().getPlayer(0).getPieces()[move.getPieceID()];
-                } else {
-                    piece = gameState.getBoard().getPlayer(1).getPieces()[move.getPieceID()];
-                }
-
-                if (piece != null) {
-                    gameState.makeMove(piece, move.getChange());
-                    myTurn = true;
-                    boardView.invalidate();
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "Failed to read opponent move", error.toException());
-            }
-        });
     }
 
     private void listenForMoves() {
@@ -255,6 +275,7 @@ public class OnlineGameActivity extends AppCompatActivity {
         }
 
         boardView.switchTurn();
+        updateTurnUI();
         boardView.invalidate();
     }
 
@@ -343,6 +364,8 @@ public class OnlineGameActivity extends AppCompatActivity {
             gameState.promotePawn(pawn, newPiece);
             myTurn = true;
 
+            updateTurnUI();
+
             boardView.invalidate();
         }
     }
@@ -352,6 +375,115 @@ public class OnlineGameActivity extends AppCompatActivity {
         if (piece instanceof Pawn && (move.getChange().getY() == 0 || move.getChange().getY() == 7))
             return true;
         return false;
+    }
+
+    public void listenForMessages(){
+        chatRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot snapshot, String prevChildKey) {
+                ChatMessage msg = snapshot.getValue(ChatMessage.class);
+                if(msg == null) return;
+
+                messages.add(msg);
+
+                runOnUiThread(() -> {
+                    adapter.notifyItemInserted(messages.size() - 1);
+                    chatRecycler.scrollToPosition(messages.size() - 1);
+                });
+            }
+
+            @Override public void onChildChanged(DataSnapshot s, String p) {}
+            @Override public void onChildRemoved(DataSnapshot s) {}
+            @Override public void onChildMoved(DataSnapshot s, String p) {}
+            @Override public void onCancelled(DatabaseError error) {}
+        });
+    }
+
+    public void updateTurnUI() {
+        if (myTurn) {
+            highlightView(bottomPlayerName);
+            unhighlightView(topPlayerName);
+        } else {
+            highlightView(topPlayerName);
+            unhighlightView(bottomPlayerName);
+        }
+    }
+
+    public void highlightView(TextView view) {
+        view.setBackgroundColor(0x55DB1A1A); // soft yellow glow
+    }
+
+    public void unhighlightView(TextView view) {
+        view.setBackgroundColor(0x00000000); // transparent
+    }
+
+    public void setupUsername(int player){ // 0=me, 1=opponent
+        if(player == 0){
+            DatabaseReference userRef = FirebaseDatabase.getInstance()
+                    .getReference("users")
+                    .child(myUID);
+
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    User user = snapshot.getValue(User.class);
+                    if (user != null) {
+                        bottomPlayerName.setText(user.username);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {}
+            });
+        }
+
+        else{
+            DatabaseReference playersRef = FirebaseDatabase.getInstance()
+                    .getReference("games")
+                    .child(gameID);
+
+            playersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    String whiteUID = snapshot.child("white").getValue(String.class);
+                    String blackUID = snapshot.child("black").getValue(String.class);
+
+                    String opponentUID;
+
+                    if (myUID.equals(whiteUID)) {
+                        opponentUID = blackUID;
+                    } else {
+                        opponentUID = whiteUID;
+                    }
+
+                    loadOpponentName(opponentUID);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {}
+            });
+        }
+
+    }
+
+    private void loadOpponentName(String opponentUID) {
+
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(opponentUID);
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                if (user != null) {
+                    topPlayerName.setText(user.username);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
     }
 
 }
