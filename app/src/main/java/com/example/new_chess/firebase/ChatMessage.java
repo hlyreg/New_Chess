@@ -1,4 +1,4 @@
-package com.example.new_chess;
+package com.example.new_chess.firebase;
 
 public class ChatMessage {
     private String senderId;

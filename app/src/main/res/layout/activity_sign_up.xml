@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#EAE0CF"
-    tools:context=".SignUp">
+    tools:context=".SignUpActivity">
 
     <TextView
         android:id="@+id/textView"
@@ -42,7 +42,6 @@
         android:layout_marginTop="31dp"
         android:ems="10"
         android:hint="username"
-        android:inputType="textPassword"
         android:textColor="#213448"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"

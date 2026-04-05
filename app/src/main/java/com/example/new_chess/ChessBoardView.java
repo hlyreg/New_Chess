@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 
-
+import com.example.new_chess.firebase.ColorScheme;
 import com.example.new_chess.game.Board;
 import com.example.new_chess.game.GameState;
 import com.example.new_chess.game.Player;
@@ -35,6 +35,7 @@ import com.example.new_chess.pieces.Rook;
 
 public class ChessBoardView extends View {
     private Paint paint = new Paint();
+    private ColorScheme colorScheme;
     private Paint checkGlowPaint = new Paint();
     private Paint highlightPaint = new Paint();  // the colour place holder
     private OnMoveListener moveListener;
@@ -103,9 +104,9 @@ public class ChessBoardView extends View {
             for (int x = 0; x < 8; x++) {
 
                 if ((x + y) % 2 == 0) {
-                    paint.setColor(Color.parseColor("#94B4C1"));
+                    paint.setColor(Color.parseColor(colorScheme.lightest));
                 } else {
-                    paint.setColor(Color.parseColor("#213448"));
+                    paint.setColor(Color.parseColor(colorScheme.darkest));
                 }
 
                 canvas.drawRect(
@@ -222,6 +223,12 @@ public class ChessBoardView extends View {
 
 
 //------------------------------------------------------------------
+
+    public void setColorScheme(ColorScheme scheme) {
+        this.colorScheme = scheme;
+        invalidate();
+    }
+
 
     private void loadPieceBitmaps() {
         pieceBitmaps = new HashMap<>();

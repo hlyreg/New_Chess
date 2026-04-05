@@ -1,6 +1,7 @@
 package com.example.new_chess;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -17,6 +18,11 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.new_chess.firebase.ChatAdapter;
+import com.example.new_chess.firebase.ChatMessage;
+import com.example.new_chess.firebase.ColorScheme;
+import com.example.new_chess.firebase.GameResult;
+import com.example.new_chess.firebase.User;
 import com.example.new_chess.game.Board;
 import com.example.new_chess.game.*;
 import com.example.new_chess.game.Move;
@@ -34,9 +40,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,15 +51,27 @@ public class OnlineGameActivity extends AppCompatActivity {
     private ChessBoardView boardView;
     private GameState gameState;
     private DatabaseReference gameRef;
+    private ColorScheme colorScheme;
+
+
     private boolean gameReady = false;
+    private boolean gameEnded = false;
     private String gameID;
     private boolean amIWhite;
     private boolean myTurn;
     private String promotionType = null;
-    private String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+
+    private Button btnDraw;
+    private Button btnGiveUp;
+
+    //user elements
+    private String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private String opponentUID;
     private TextView topPlayerName;
+    private String opponentUsername;
     private TextView bottomPlayerName;
+    private String myUsername;
 
     //chat elements
     private DatabaseReference chatRef;
@@ -94,6 +111,9 @@ public class OnlineGameActivity extends AppCompatActivity {
         boardView = findViewById(R.id.chessBoard);
         topPlayerName = findViewById(R.id.topPlayerName);
         bottomPlayerName = findViewById(R.id.bottomPlayerName);
+        btnDraw = findViewById(R.id.btnDraw);
+        btnGiveUp = findViewById(R.id.btnGiveUp);
+
 
         Player white = new Player(0);
         Player black = new Player(1);
@@ -104,6 +124,7 @@ public class OnlineGameActivity extends AppCompatActivity {
         Board board = new Board(white, black);
         gameState = new GameState(new Board(board.getPlayer(0), board.getPlayer(1)));
 
+        setupColorScheme();
         boardView.setBoard(board, gameState, !amIWhite); //am I black?
 
         myTurn = amIWhite;
@@ -143,6 +164,10 @@ public class OnlineGameActivity extends AppCompatActivity {
         updateTurnUI();
 
         listenForMoves();
+        listenForDrawOffers();
+        listenForGameResult();
+        btnDraw.setOnClickListener(v -> offerDraw());
+        btnGiveUp.setOnClickListener(v -> giveUp());
 
         boardView.setMoveListener((piece, move) -> {
 
@@ -169,9 +194,13 @@ public class OnlineGameActivity extends AppCompatActivity {
             gameState.makeMove(piece, move);
 
 
-            int isCheckmate = gameState.checkMate();
+            int isCheckmate = gameState.checkMate(boardView.isWhiteTurn());
+            if (gameState.isThreefoldRepetition() || gameState.getMoveCounter(0) >= 50 || gameState.getMoveCounter(1) >= 50) {
+                showWinDialog(-2);
+            }
             if(isCheckmate != -1){
-                showWinDialog(isCheckmate);
+                GameResult result = new GameResult("win", isCheckmate);
+                gameRef.child("gameResult").setValue(result);
             }
 
 
@@ -269,7 +298,10 @@ public class OnlineGameActivity extends AppCompatActivity {
             gameState.makeMove(piece, move.getChange());
         }
 
-        int isCheckmate = gameState.checkMate();
+        int isCheckmate = gameState.checkMate(boardView.isWhiteTurn());
+        if (gameState.isThreefoldRepetition() || gameState.getMoveCounter(0) >= 50 || gameState.getMoveCounter(1) >= 50) {
+            showWinDialog(-2);
+        }
         if(isCheckmate != -1){
             showWinDialog(isCheckmate);
         }
@@ -281,7 +313,25 @@ public class OnlineGameActivity extends AppCompatActivity {
 
     private void showWinDialog(int loser) {
 
-        String message = (loser == 1) ? "White wins!" : "Black wins!";
+        updateStats(loser);
+
+        String message;
+
+        if (loser == 1) { //if black lost
+            if(amIWhite) //and I'm white, I win
+                message = myUsername + " wins!";
+            else   //or I'm black, then I lose
+                message = opponentUsername+" wins!";
+        }
+        else if(loser == 0){  //if white lost
+            if(amIWhite)
+                message = opponentUsername+" wins!";
+            else
+                message = myUsername + " wins!";
+        }
+        else{
+            message = "Draw!";
+        }
 
         new AlertDialog.Builder(this)
                 .setTitle("Game Over")
@@ -299,6 +349,45 @@ public class OnlineGameActivity extends AppCompatActivity {
 
                 .show();
     }
+
+    private void updateStats(int loser) {
+
+        boolean iAmWinner = false;
+        boolean draw = false;
+
+        if (loser == 1) { // black lost , then white wins
+            iAmWinner = amIWhite;
+        } else if(loser == 0) { // white lost, then black wins
+            iAmWinner = !amIWhite;
+        }
+        else{
+            draw = true;
+        }
+
+
+        if (iAmWinner && !draw) {
+            incrementField(myUID, "wins");
+            incrementField(opponentUID, "losses");
+        }
+        else if(!iAmWinner && !draw) {
+            incrementField(myUID, "losses");
+            incrementField(opponentUID, "wins");
+        }
+        else{
+            incrementField(myUID, "draws");
+            incrementField(opponentUID, "draws");
+        }
+    }
+
+    private void incrementField(String uid, String field) {
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(uid)
+                .child(field);
+
+        ref.setValue(ServerValue.increment(1));
+    }
+
 
     private void showPromotionMenu(Piece pawn, Point move) { //in MainActivity because it needs an activity
 
@@ -346,6 +435,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
 
     public void promoteEnemyPawn(Move move){
         String promotionClass = move.getPromotion();
@@ -429,6 +519,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                     User user = snapshot.getValue(User.class);
                     if (user != null) {
                         bottomPlayerName.setText(user.username);
+                        myUsername = user.username;
                     }
                 }
 
@@ -448,13 +539,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                     String whiteUID = snapshot.child("white").getValue(String.class);
                     String blackUID = snapshot.child("black").getValue(String.class);
 
-                    String opponentUID;
-
-                    if (myUID.equals(whiteUID)) {
-                        opponentUID = blackUID;
-                    } else {
-                        opponentUID = whiteUID;
-                    }
+                    opponentUID = myUID.equals(whiteUID) ? blackUID : whiteUID;
 
                     loadOpponentName(opponentUID);
                 }
@@ -478,6 +563,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                 User user = snapshot.getValue(User.class);
                 if (user != null) {
                     topPlayerName.setText(user.username);
+                    opponentUsername = user.username;
                 }
             }
 
@@ -486,4 +572,161 @@ public class OnlineGameActivity extends AppCompatActivity {
         });
     }
 
+    private void offerDraw() {
+        gameRef.child("drawOffer").setValue(myUID);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Draw Offered")
+                .setMessage("Waiting for opponent to respond...")
+                .setPositiveButton("OK", null)
+                .show();
+        btnDraw.setEnabled(false);
+    }
+
+    private void listenForDrawOffers() {
+        gameRef.child("drawOffer").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                String offerUID = snapshot.getValue(String.class);
+
+                if (offerUID == null) return;
+
+                // If YOU sent it → ignore
+                if (offerUID.equals(myUID)) return;
+
+                // Opponent offered draw → show dialog
+                showDrawDialog();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
+
+    private void showDrawDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Draw Offer")
+                .setMessage(opponentUsername + " offers a draw.")
+                .setPositiveButton("Accept", (dialog, which) -> {
+                    gameRef.child("drawOffer").removeValue();
+                    GameResult result = new GameResult("draw", -1);
+                    gameRef.child("gameResult").setValue(result);
+
+                    showWinDialog(-2);
+                })
+                .setNegativeButton("Decline", (dialog, which) -> {
+                    gameRef.child("drawOffer").removeValue();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+
+    private void giveUp() {
+        new AlertDialog.Builder(this)
+                .setTitle("Give Up")
+                .setMessage("Are you sure you want to resign?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+
+                    GameResult result = new GameResult("resign", amIWhite ? 0 : 1);
+                    gameRef.child("gameResult").setValue(result);
+                    gameRef.child("resignedBy").setValue(myUID);
+
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+
+    private void listenForGameResult() {
+        gameRef.child("gameResult").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                if (!snapshot.exists()) return;
+
+                GameResult result = snapshot.getValue(GameResult.class);
+                if (result == null) return;
+
+                handleGameResult(result);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
+
+    private void handleGameResult(GameResult result) {
+        if (gameEnded) return;
+        gameEnded = true;
+
+        switch (result.type) {
+
+            case "draw":
+                showWinDialog(-2);
+                break;
+
+            case "win":
+                showWinDialog(result.loser);
+                break;
+
+            case "resign":
+                handleResignResult(result.loser);
+                break;
+        }
+    }
+
+    private void handleResignResult(int loser) {
+
+        updateStats(loser);
+
+        boolean iLost = (amIWhite && loser == 0) || (!amIWhite && loser == 1);
+
+        String message;
+
+        if (iLost) {
+            message = "You gave up. " + opponentUsername + " wins.";
+        } else {
+            message = opponentUsername + " gave up. You win!";
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Game Over")
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("Back to Home", (dialog, which) -> {
+                    Intent intent = new Intent(this, HomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                })
+                .show();
+    }
+
+
+    private void applyColorScheme() {
+        boardView.setColorScheme(colorScheme);
+        findViewById(R.id.main).setBackgroundColor(
+                Color.parseColor(colorScheme.background)
+        );
+    }
+
+    public void setupColorScheme(){
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(myUID);
+        userRef.child("colorScheme").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                colorScheme = snapshot.getValue(ColorScheme.class);
+
+                if (colorScheme == null) {
+                    colorScheme = new ColorScheme().getDefault();
+                }
+
+                applyColorScheme();
+            }
+
+            @Override public void onCancelled(DatabaseError error) {}
+        });
+    }
 }

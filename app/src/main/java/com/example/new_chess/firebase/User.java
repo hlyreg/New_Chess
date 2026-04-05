@@ -1,7 +1,4 @@
-package com.example.new_chess;
-
-import android.widget.Button;
-import android.widget.EditText;
+package com.example.new_chess.firebase;
 
 public class User {
     public String username;

@@ -142,5 +142,11 @@ public abstract class Piece {
     public Player getPlayer(){
         return this.player;
     }
+
+    public boolean compare(Piece p){
+        if(p.getColour() == this.colour && p.getID() == this.ID && p.getPlace() == this.place)
+            return true;
+        return false;
+    }
 }
 

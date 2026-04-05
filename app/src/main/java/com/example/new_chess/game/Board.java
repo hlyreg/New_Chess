@@ -168,6 +168,25 @@ public class Board {
     }
 
 
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof Board){
+            Piece[][] cmpBoard = ((Board) o).getBoard();
+
+
+            for(int x = 0; x < 7; x++){
+                for(int y = 0; y < 7; y++){
+                    Piece piece = cmpBoard[x][y];
+                    if(piece != null){
+                        if(!piece.compare(board[x][y]))
+                            return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 
     public boolean wasLastMovePawnTwo() {
         return lastPawnDoubleStep != null;

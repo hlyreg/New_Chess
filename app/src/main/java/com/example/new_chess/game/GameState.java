@@ -1,9 +1,7 @@
 package com.example.new_chess.game;
 
-import com.example.new_chess.LocalGameActivity;
 import com.example.new_chess.pieces.Pawn;
 import com.example.new_chess.pieces.Piece;
-import com.example.new_chess.pieces.Queen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +12,8 @@ public class GameState {
     private final Stack<Board> futureBoards = new Stack<>();
     private PromotionListener promotionListener;
     private Board currentBoard;
+    private int moveCounterWhite = 0;
+    private int moveCounterBlack = 0;
 
     public GameState(Board start) {
         currentBoard = start;
@@ -29,6 +29,16 @@ public class GameState {
         // create new board with piece copies & updated positions
         currentBoard = new Board(currentBoard, piece.getPlace(), move, piece);
         futureBoards.clear();
+
+        if (piece instanceof Pawn || move.isTakes()) {
+            if(piece.getColour() == 0)
+                moveCounterWhite = 0;
+            moveCounterBlack = 0;
+        } else {
+            if(piece.getColour() == 0)
+                moveCounterWhite++;
+            moveCounterBlack++;
+        }
 
         // Check pawn promotion
         if (piece instanceof Pawn && (move.getY() == 0 || move.getY() == 7)) {
@@ -73,26 +83,38 @@ public class GameState {
 
     }
 
-    public int checkMate(){  // returns the colour of the player that lost
+    public int checkMate(boolean isWhite){  // returns the colour of the player that lost
         Point checkPlace = getKingInCheck();
         Board board = this.getBoard();
+        int turn = (isWhite)? 0:1;
+
 
         // if the king is in check, and none of the pieces can move, then the checked player loses.
         if(checkPlace != null){
             int color = board.getBoard()[checkPlace.getX()][checkPlace.getY()].getColour();
-            Piece[] threatenedPieces = board.getPlayer(color).getPieces();
-            List<Point> moves = new ArrayList<>();
+            boolean moving = canMove(color);
+            return color;
+        }
+        if(!canMove(turn))
+            return -2;  // if it's a draw, return -2
+        return -1; // if no one lost return -1
+    }
 
-            for(Piece piece : threatenedPieces){  //check if each piece can't move
-                if(piece != null) {
-                    moves.addAll(piece.getLegalMoves(board, board.wasLastMovePawnTwo()));
-                }
-                }
-            if(moves.isEmpty()) {
-                return color;
+
+    public boolean canMove(int color){
+        Board board = this.getBoard();
+        Piece[] movingPieces = board.getPlayer(color).getPieces();
+        List<Point> moves = new ArrayList<>();
+
+        for(Piece piece : movingPieces){  //check if each piece can't move
+            if(piece != null) {
+                moves.addAll(piece.getLegalMoves(board, board.wasLastMovePawnTwo()));
             }
         }
-        return -1; // if no one lost return -1
+        if(moves.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
     public Point getKingInCheck() {
@@ -121,6 +143,18 @@ public class GameState {
         return null;
     }
 
+    public boolean isThreefoldRepetition() {
+        int count = 0;
+
+        for (Board b : pastBoards) {
+            if (b.equals(currentBoard)) {
+                count++;
+            }
+        }
+
+        return count >= 2; // current position = 3rd occurrence
+    }
+
 
     public boolean canUndo() {
         return !pastBoards.isEmpty();
@@ -147,6 +181,12 @@ public class GameState {
     }
     public interface PromotionListener {
         void onPawnPromotion(Piece pawn, Point move);
+    }
+
+    public int getMoveCounter(int colour){
+        if(colour == 0)
+            return moveCounterWhite;
+        return moveCounterBlack;
     }
 
 

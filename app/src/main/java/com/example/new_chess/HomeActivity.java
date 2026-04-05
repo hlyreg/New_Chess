@@ -2,7 +2,6 @@ package com.example.new_chess;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +15,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.new_chess.firebase.ProfileActivity;
+import com.example.new_chess.firebase.ThemeManager;
+import com.example.new_chess.firebase.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +31,7 @@ import java.util.Map;
 public class HomeActivity extends AppCompatActivity {
     FirebaseAuth auth;
     Button searchButton;
+    private boolean isInviteDialogShowing = false;
     private EditText usernameInput;
     private Button searchUserButton;
     private Button playFriendButton;
@@ -43,6 +46,11 @@ public class HomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        int[] theme = ThemeManager.getTheme(this);
+
+        findViewById(R.id.main).setBackgroundColor(theme[3]);
+        bottomPlayerName.setTextColor(theme[2]);
 
         usernameInput = findViewById(R.id.usernameInput);
         searchUserButton = findViewById(R.id.searchUserButton);
@@ -93,14 +101,25 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-        public void playLocal(View v){
-            startActivity(new Intent(this, LocalGameActivity.class));
-        }
 
-        public void playOnline(View v){
-            String username = usernameInput.getText().toString();
-            searchForPlayer(username);
-        }
+    public void profile(View v){
+        startActivity(new Intent(this, ProfileActivity.class));
+    }
+
+    public void logout(View v){
+        auth.signOut();
+        startActivity(new Intent(this, StartActivity.class));
+        finish();
+    }
+
+    public void playLocal(View v){
+        startActivity(new Intent(this, LocalGameActivity.class));
+    }
+
+    public void playOnline(View v){
+        String username = usernameInput.getText().toString();
+        searchForPlayer(username);
+    }
 
     private void searchForPlayer(String username){
 
@@ -144,9 +163,9 @@ public class HomeActivity extends AppCompatActivity {
         String inviteID = invitesRef.push().getKey();
 
         Map<String,Object> invite = new HashMap<>();
+        invite.put("status", "pending");
         invite.put("from", myUID);
         invite.put("to", opponentUID);
-        invite.put("status", "pending");
         invite.put("seen", false);
         invite.put("timestamp", System.currentTimeMillis());
 
@@ -161,11 +180,6 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-        public void logout(View v){
-            auth.signOut();
-            startActivity(new Intent(this, StartActivity.class));
-            finish();
-        }
 
     private void listenForInvites(){
 
@@ -174,34 +188,29 @@ public class HomeActivity extends AppCompatActivity {
         DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
 
         invitesRef.orderByChild("to").equalTo(myUID)
-                .addValueEventListener(new ValueEventListener() { //changed maybe temporarily from .addListenerForSingleValueEvent
+                .addValueEventListener(new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-                        Log.d("INVITE_DEBUG", "Listener triggered");
 
                         for(DataSnapshot inviteSnap : snapshot.getChildren()){
-                            Log.d("INVITE_DEBUG", inviteSnap.toString());
 
-                            String status = inviteSnap.child("status").getValue(String.class);
-
-                            if("pending".equals(status)){
-
-                                Boolean seen = inviteSnap.child("seen").getValue(Boolean.class);
-
-                                if(seen == null || !seen){
-                                    markInviteSeen(inviteSnap.getKey());
-                                    showInvitePopup(inviteSnap);
-                                }
-                            }
-
-                            long now = System.currentTimeMillis();
                             Long timestamp = inviteSnap.child("timestamp").getValue(Long.class);
+                            long now = System.currentTimeMillis();
 
                             if(timestamp != null && now - timestamp > 30000){
-                                // expire invite
                                 expireInvite(inviteSnap.getKey());
                                 continue;
+                            }
+
+                            String status = inviteSnap.child("status").getValue(String.class);
+                            if (!"pending".equals(status)) continue;
+
+                            Boolean seen = inviteSnap.child("seen").getValue(Boolean.class);
+
+                            if(seen == null || !seen){
+                                markInviteSeen(inviteSnap.getKey());
+                                showInvitePopup(inviteSnap);
                             }
                         }
                     }
@@ -212,6 +221,10 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void showInvitePopup(DataSnapshot inviteSnap){
+
+        if (isInviteDialogShowing) return; // prevent's multiple invites
+
+        isInviteDialogShowing = true;
 
         String fromUID = inviteSnap.child("from").getValue(String.class);
         String inviteID = inviteSnap.getKey();
