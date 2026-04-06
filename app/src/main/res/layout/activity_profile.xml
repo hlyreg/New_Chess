@@ -6,8 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".firebase.ProfileActivity">
+
     <ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#EAE0CF">
@@ -22,67 +23,67 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#FFFFFF"
-                android:padding="16dp"
                 android:layout_marginBottom="16dp"
-                android:elevation="4dp">
+                android:background="#FFFFFF"
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
                     android:id="@+id/usernameTV"
-                    android:text="Username"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="#213448"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Username"
+                    android:textColor="#213448"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/emailTV"
-                    android:text="email@gmail.com"
-                    android:textSize="14sp"
-                    android:textColor="#777777"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="email@gmail.com"
+                    android:textColor="#777777"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- ================= STATS CARD ================= -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#FFFFFF"
-                android:padding="16dp"
                 android:layout_marginBottom="16dp"
-                android:elevation="4dp">
+                android:background="#FFFFFF"
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
-                    android:text="Statistics"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#213448"
-                    android:layout_marginBottom="8dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="Statistics"
+                    android:textColor="#213448"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/statsTV"
-                    android:text="Wins: 0   Losses: 0   Draws: 0"
-                    android:textSize="16sp"
-                    android:textColor="#213448"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Wins: 0   Losses: 0   Draws: 0"
+                    android:textColor="#213448"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <!-- ================= THEME CARD ================= -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#FFFFFF"
-                android:padding="16dp"
                 android:layout_marginBottom="16dp"
-                android:elevation="4dp">
+                android:background="#FFFFFF"
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -90,43 +91,48 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:text="Color Theme"
-                        android:textSize="18sp"
-                        android:textColor="#213448"
-                        android:layout_weight="1"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Color Theme"
+                        android:textColor="#213448"
+                        android:textSize="18sp" />
 
                     <ImageView
                         android:id="@+id/themeArrow"
-                        android:src="@android:drawable/arrow_down_float"
                         android:layout_width="24dp"
-                        android:layout_height="24dp"/>
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/arrow_down_float" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/themeOptions"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:layout_marginTop="10dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <Button
                         android:id="@+id/themeDefault"
-                        android:text="Default"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#213448"
+                        android:text="Default" />
+
                     <Button
                         android:id="@+id/themeClassicLight"
-                        android:text="Classic Light"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#213448"
+                        android:text="Classic Light" />
+
                     <Button
                         android:id="@+id/themeClassicDark"
-                        android:text="Classic Dark"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#213448"
+                        android:text="Classic Dark" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -134,10 +140,10 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:background="#FFFFFF"
-                android:padding="16dp"
-                android:elevation="4dp">
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -145,46 +151,59 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:text="Timer"
-                        android:textSize="18sp"
-                        android:textColor="#213448"
-                        android:layout_weight="1"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Timer"
+                        android:textColor="#213448"
+                        android:textSize="18sp" />
 
                     <ImageView
                         android:id="@+id/timerArrow"
-                        android:src="@android:drawable/arrow_down_float"
                         android:layout_width="24dp"
-                        android:layout_height="24dp"/>
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/arrow_down_float" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/timerOptions"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:layout_marginTop="10dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <Switch
                         android:id="@+id/timerSwitch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:thumbTint="#94B4C1"
-                        android:trackTint="#213448"/>
+                        android:trackTint="#213448" />
 
                     <EditText
                         android:id="@+id/timeInput"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:hint="Minutes per player"
                         android:inputType="number"
-                        android:visibility="gone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
+
+    <Button
+        android:id="@+id/homebtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#213448"
+        android:onClick="BackToHome"
+        android:text="Home Page"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/scrollView2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

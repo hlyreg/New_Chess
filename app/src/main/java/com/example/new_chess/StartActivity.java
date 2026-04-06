@@ -10,6 +10,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.new_chess.firebase.ThemeManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class StartActivity extends AppCompatActivity {
@@ -25,6 +26,10 @@ public class StartActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        ThemeManager.applyTheme(
+                findViewById(android.R.id.content),
+                ThemeManager.getTheme(this)
+        );
 
         auth = FirebaseAuth.getInstance();
 

@@ -15,6 +15,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.new_chess.firebase.ThemeManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseNetworkException;
@@ -44,6 +45,11 @@ public class LoginActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        ThemeManager.applyTheme(
+                findViewById(android.R.id.content),
+                ThemeManager.getTheme(this)
+        );
 
         ETpassword = findViewById(R.id.IDInput);
         ETemail = findViewById(R.id.nameInput);

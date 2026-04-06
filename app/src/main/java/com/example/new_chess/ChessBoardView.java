@@ -19,10 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 
-import com.example.new_chess.firebase.ColorScheme;
+import com.example.new_chess.firebase.ThemeManager;
 import com.example.new_chess.game.Board;
 import com.example.new_chess.game.GameState;
-import com.example.new_chess.game.Player;
 import com.example.new_chess.game.Point;
 import com.example.new_chess.pieces.Bishop;
 import com.example.new_chess.pieces.King;
@@ -35,7 +34,6 @@ import com.example.new_chess.pieces.Rook;
 
 public class ChessBoardView extends View {
     private Paint paint = new Paint();
-    private ColorScheme colorScheme;
     private Paint checkGlowPaint = new Paint();
     private Paint highlightPaint = new Paint();  // the colour place holder
     private OnMoveListener moveListener;
@@ -100,13 +98,14 @@ public class ChessBoardView extends View {
     }
 //------------------------------------------------------DRAW FUNCTIONS--------------------------------------
     private void drawBoard(Canvas canvas) {
+        int[] theme = ThemeManager.getTheme(getContext());
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
 
                 if ((x + y) % 2 == 0) {
-                    paint.setColor(Color.parseColor(colorScheme.lightest));
+                    paint.setColor(theme[0]);
                 } else {
-                    paint.setColor(Color.parseColor(colorScheme.darkest));
+                    paint.setColor(theme[1]);
                 }
 
                 canvas.drawRect(
@@ -224,10 +223,7 @@ public class ChessBoardView extends View {
 
 //------------------------------------------------------------------
 
-    public void setColorScheme(ColorScheme scheme) {
-        this.colorScheme = scheme;
-        invalidate();
-    }
+
 
 
     private void loadPieceBitmaps() {

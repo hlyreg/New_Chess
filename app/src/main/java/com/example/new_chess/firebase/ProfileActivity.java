@@ -1,5 +1,6 @@
 package com.example.new_chess.firebase;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.new_chess.HomeActivity;
 import com.example.new_chess.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -48,6 +50,11 @@ public class ProfileActivity extends AppCompatActivity {
             return insets;
         });
         prefs = getSharedPreferences("settings", MODE_PRIVATE);
+
+        ThemeManager.applyTheme(
+                findViewById(android.R.id.content),
+                ThemeManager.getTheme(this)
+        );
 
         usernameTV = findViewById(R.id.usernameTV);
         emailTV = findViewById(R.id.emailTV);
@@ -148,5 +155,9 @@ public class ProfileActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void BackToHome(View v){
+        startActivity(new Intent(this, HomeActivity.class));
     }
 }

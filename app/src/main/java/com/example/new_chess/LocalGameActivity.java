@@ -13,6 +13,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.new_chess.firebase.ThemeManager;
 import com.example.new_chess.game.Board;
 import com.example.new_chess.game.Player;
 import com.example.new_chess.game.*;
@@ -39,6 +40,10 @@ public class LocalGameActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        ThemeManager.applyTheme(
+                findViewById(android.R.id.content),
+                ThemeManager.getTheme(this)
+        );
 
         bottomPlayerName = findViewById(R.id.bottomPlayerName);
         topPlayerName = findViewById(R.id.topPlayerName);

@@ -1,7 +1,6 @@
 package com.example.new_chess;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -20,8 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.new_chess.firebase.ChatAdapter;
 import com.example.new_chess.firebase.ChatMessage;
-import com.example.new_chess.firebase.ColorScheme;
 import com.example.new_chess.firebase.GameResult;
+import com.example.new_chess.firebase.ThemeManager;
 import com.example.new_chess.firebase.User;
 import com.example.new_chess.game.Board;
 import com.example.new_chess.game.*;
@@ -51,7 +50,6 @@ public class OnlineGameActivity extends AppCompatActivity {
     private ChessBoardView boardView;
     private GameState gameState;
     private DatabaseReference gameRef;
-    private ColorScheme colorScheme;
 
 
     private boolean gameReady = false;
@@ -83,7 +81,6 @@ public class OnlineGameActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("LIFECYCLE", "onCreate called");
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_online_game);
@@ -92,12 +89,15 @@ public class OnlineGameActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        ThemeManager.applyTheme(
+                findViewById(android.R.id.content),
+                ThemeManager.getTheme(this)
+        );
 
         gameID = getIntent().getStringExtra("GAME_ID");
         amIWhite = getIntent().getBooleanExtra("PLAYER_COLOR", false);
 
         if (gameID == null) {
-            Log.e("GAME", "gameID is NULL!");
             finish();
             return;
         }
@@ -124,7 +124,7 @@ public class OnlineGameActivity extends AppCompatActivity {
         Board board = new Board(white, black);
         gameState = new GameState(new Board(board.getPlayer(0), board.getPlayer(1)));
 
-        setupColorScheme();
+
         boardView.setBoard(board, gameState, !amIWhite); //am I black?
 
         myTurn = amIWhite;
@@ -151,7 +151,7 @@ public class OnlineGameActivity extends AppCompatActivity {
 
         sendBtn.setOnClickListener(v -> {
             String text = messageInput.getText().toString().trim();
-            if(text.isEmpty()) return;
+            if (text.isEmpty()) return;
 
             new Thread(() -> {
                 ChatMessage msg = new ChatMessage(myUID, text, System.currentTimeMillis());
@@ -171,13 +171,13 @@ public class OnlineGameActivity extends AppCompatActivity {
 
         boardView.setMoveListener((piece, move) -> {
 
-            if(!gameReady) return;
-            if(!myTurn) return;
+            if (!gameReady) return;
+            if (!myTurn) return;
 
             gameState.setPawnPromotionListener(new GameState.PromotionListener() {
                 @Override
                 public void onPawnPromotion(Piece pawn, Point move) {
-                    if(myTurn) {
+                    if (myTurn) {
                         showPromotionMenu(pawn, move);
                     }
                 }
@@ -198,7 +198,7 @@ public class OnlineGameActivity extends AppCompatActivity {
             if (gameState.isThreefoldRepetition() || gameState.getMoveCounter(0) >= 50 || gameState.getMoveCounter(1) >= 50) {
                 showWinDialog(-2);
             }
-            if(isCheckmate != -1){
+            if (isCheckmate != -1) {
                 GameResult result = new GameResult("win", isCheckmate);
                 gameRef.child("gameResult").setValue(result);
             }
@@ -252,7 +252,7 @@ public class OnlineGameActivity extends AppCompatActivity {
 
                 applyMoveFromFirebase(move);
 
-                if(move.getPromotion() != null){
+                if (move.getPromotion() != null) {
                     promoteEnemyPawn(move);
                 }
 
@@ -282,19 +282,17 @@ public class OnlineGameActivity extends AppCompatActivity {
         Piece piece = gameState.getBoard().getPieceById(move.getPieceID(), move.isWhiteMove());
 
         if (piece == null) {
-            Log.e("MOVE", "Piece not found!");
             return;
         }
 
 
         myTurn = true;
 
-        if(isPromotion(move)){
+        if (isPromotion(move)) {
             gameState.makeMove(piece, move.getChange(), false);
             myTurn = false;
             boardView.switchTurn();
-        }
-        else if (move.getPromotion() == null) {
+        } else if (move.getPromotion() == null) {
             gameState.makeMove(piece, move.getChange());
         }
 
@@ -302,7 +300,7 @@ public class OnlineGameActivity extends AppCompatActivity {
         if (gameState.isThreefoldRepetition() || gameState.getMoveCounter(0) >= 50 || gameState.getMoveCounter(1) >= 50) {
             showWinDialog(-2);
         }
-        if(isCheckmate != -1){
+        if (isCheckmate != -1) {
             showWinDialog(isCheckmate);
         }
 
@@ -318,18 +316,16 @@ public class OnlineGameActivity extends AppCompatActivity {
         String message;
 
         if (loser == 1) { //if black lost
-            if(amIWhite) //and I'm white, I win
+            if (amIWhite) //and I'm white, I win
                 message = myUsername + " wins!";
             else   //or I'm black, then I lose
-                message = opponentUsername+" wins!";
-        }
-        else if(loser == 0){  //if white lost
-            if(amIWhite)
-                message = opponentUsername+" wins!";
+                message = opponentUsername + " wins!";
+        } else if (loser == 0) {  //if white lost
+            if (amIWhite)
+                message = opponentUsername + " wins!";
             else
                 message = myUsername + " wins!";
-        }
-        else{
+        } else {
             message = "Draw!";
         }
 
@@ -357,10 +353,9 @@ public class OnlineGameActivity extends AppCompatActivity {
 
         if (loser == 1) { // black lost , then white wins
             iAmWinner = amIWhite;
-        } else if(loser == 0) { // white lost, then black wins
+        } else if (loser == 0) { // white lost, then black wins
             iAmWinner = !amIWhite;
-        }
-        else{
+        } else {
             draw = true;
         }
 
@@ -368,12 +363,10 @@ public class OnlineGameActivity extends AppCompatActivity {
         if (iAmWinner && !draw) {
             incrementField(myUID, "wins");
             incrementField(opponentUID, "losses");
-        }
-        else if(!iAmWinner && !draw) {
+        } else if (!iAmWinner && !draw) {
             incrementField(myUID, "losses");
             incrementField(opponentUID, "wins");
-        }
-        else{
+        } else {
             incrementField(myUID, "draws");
             incrementField(opponentUID, "draws");
         }
@@ -400,7 +393,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                     Piece newPiece = null;
 
 
-                    switch(which){
+                    switch (which) {
                         case 0:
                             newPiece = new Queen(move, pawn.getColour(), pawn.getPlayer(), pawn.getID());
                             break;
@@ -437,18 +430,18 @@ public class OnlineGameActivity extends AppCompatActivity {
     }
 
 
-    public void promoteEnemyPawn(Move move){
+    public void promoteEnemyPawn(Move move) {
         String promotionClass = move.getPromotion();
         Piece newPiece = null;
         Piece pawn = gameState.getBoard().getBoard()[move.getChange().getX()][move.getChange().getY()];
-        if(pawn instanceof Pawn){
-            if(promotionClass.equals("Queen"))
+        if (pawn instanceof Pawn) {
+            if (promotionClass.equals("Queen"))
                 newPiece = new Queen(move.getChange(), pawn.getColour(), pawn.getPlayer(), pawn.getID());
-            if(promotionClass.equals("Rook"))
+            if (promotionClass.equals("Rook"))
                 newPiece = new Rook(move.getChange(), pawn.getColour(), pawn.getPlayer(), pawn.getID());
-            if(promotionClass.equals("Knight"))
+            if (promotionClass.equals("Knight"))
                 newPiece = new Knight(move.getChange(), pawn.getColour(), pawn.getPlayer(), pawn.getID());
-            if(promotionClass.equals("Bishop"))
+            if (promotionClass.equals("Bishop"))
                 newPiece = new Bishop(move.getChange(), pawn.getColour(), pawn.getPlayer(), pawn.getID());
 
             gameState.promotePawn(pawn, newPiece);
@@ -460,19 +453,19 @@ public class OnlineGameActivity extends AppCompatActivity {
         }
     }
 
-    public boolean isPromotion(Move move){
+    public boolean isPromotion(Move move) {
         Piece piece = gameState.getBoard().getBoard()[move.getBefore().getX()][move.getBefore().getY()];
         if (piece instanceof Pawn && (move.getChange().getY() == 0 || move.getChange().getY() == 7))
             return true;
         return false;
     }
 
-    public void listenForMessages(){
+    public void listenForMessages() {
         chatRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot snapshot, String prevChildKey) {
                 ChatMessage msg = snapshot.getValue(ChatMessage.class);
-                if(msg == null) return;
+                if (msg == null) return;
 
                 messages.add(msg);
 
@@ -482,10 +475,21 @@ public class OnlineGameActivity extends AppCompatActivity {
                 });
             }
 
-            @Override public void onChildChanged(DataSnapshot s, String p) {}
-            @Override public void onChildRemoved(DataSnapshot s) {}
-            @Override public void onChildMoved(DataSnapshot s, String p) {}
-            @Override public void onCancelled(DatabaseError error) {}
+            @Override
+            public void onChildChanged(DataSnapshot s, String p) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot s) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot s, String p) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 
@@ -507,8 +511,8 @@ public class OnlineGameActivity extends AppCompatActivity {
         view.setBackgroundColor(0x00000000); // transparent
     }
 
-    public void setupUsername(int player){ // 0=me, 1=opponent
-        if(player == 0){
+    public void setupUsername(int player) { // 0=me, 1=opponent
+        if (player == 0) {
             DatabaseReference userRef = FirebaseDatabase.getInstance()
                     .getReference("users")
                     .child(myUID);
@@ -524,11 +528,10 @@ public class OnlineGameActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onCancelled(DatabaseError error) {}
+                public void onCancelled(DatabaseError error) {
+                }
             });
-        }
-
-        else{
+        } else {
             DatabaseReference playersRef = FirebaseDatabase.getInstance()
                     .getReference("games")
                     .child(gameID);
@@ -545,7 +548,8 @@ public class OnlineGameActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onCancelled(DatabaseError error) {}
+                public void onCancelled(DatabaseError error) {
+                }
             });
         }
 
@@ -568,7 +572,8 @@ public class OnlineGameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 
@@ -599,7 +604,8 @@ public class OnlineGameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 
@@ -652,7 +658,8 @@ public class OnlineGameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 
@@ -702,31 +709,4 @@ public class OnlineGameActivity extends AppCompatActivity {
                 .show();
     }
 
-
-    private void applyColorScheme() {
-        boardView.setColorScheme(colorScheme);
-        findViewById(R.id.main).setBackgroundColor(
-                Color.parseColor(colorScheme.background)
-        );
-    }
-
-    public void setupColorScheme(){
-        DatabaseReference userRef = FirebaseDatabase.getInstance()
-                .getReference("users")
-                .child(myUID);
-        userRef.child("colorScheme").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                colorScheme = snapshot.getValue(ColorScheme.class);
-
-                if (colorScheme == null) {
-                    colorScheme = new ColorScheme().getDefault();
-                }
-
-                applyColorScheme();
-            }
-
-            @Override public void onCancelled(DatabaseError error) {}
-        });
-    }
 }

@@ -47,14 +47,16 @@ public class HomeActivity extends AppCompatActivity {
             return insets;
         });
 
-        int[] theme = ThemeManager.getTheme(this);
-
-        findViewById(R.id.main).setBackgroundColor(theme[3]);
-        bottomPlayerName.setTextColor(theme[2]);
+        ThemeManager.applyTheme(
+                findViewById(android.R.id.content),
+                ThemeManager.getTheme(this)
+        );
 
         usernameInput = findViewById(R.id.usernameInput);
         searchUserButton = findViewById(R.id.searchUserButton);
         playFriendButton = findViewById(R.id.playFriendButton);
+
+
 
         auth = FirebaseAuth.getInstance();
 
@@ -346,5 +348,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 }
+
 
 
