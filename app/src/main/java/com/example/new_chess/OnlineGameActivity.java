@@ -108,6 +108,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                 .child(gameID);
 
 
+
         boardView = findViewById(R.id.chessBoard);
         topPlayerName = findViewById(R.id.topPlayerName);
         bottomPlayerName = findViewById(R.id.bottomPlayerName);
@@ -708,5 +709,7 @@ public class OnlineGameActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
+
 
 }

@@ -57,28 +57,6 @@ public class ThemeManager {
             }
         }
 
-        // Apply styles based on type
-        if (root instanceof Button) {
-            ((Button) root).setBackgroundTintList(
-                    ColorStateList.valueOf(theme[2])
-            );
-            ((Button) root).setTextColor(theme[3]);
-        }
-
-        else if (root instanceof TextView) {
-            ((TextView) root).setTextColor(theme[2]);
-        }
-
-        else if (root instanceof Switch) {
-            ((Switch) root).setThumbTintList(
-                    ColorStateList.valueOf(theme[3])
-            );
-            ((Switch) root).setTrackTintList(
-                    ColorStateList.valueOf(theme[2])
-            );
-        }
-
-        // Background (optional)
         root.setBackgroundColor(theme[3]);
 
         String themeName = root.getContext()
@@ -107,6 +85,26 @@ public class ThemeManager {
                 );
             }
         }
+
+        else{// Apply styles based on type
+            if (root instanceof Button) {
+                ((Button) root).setBackgroundTintList(
+                        ColorStateList.valueOf(theme[2])
+                );
+                ((Button) root).setTextColor(theme[3]);
+            } else if (root instanceof TextView) {
+                ((TextView) root).setTextColor(theme[2]);
+            } else if (root instanceof Switch) {
+                ((Switch) root).setThumbTintList(
+                        ColorStateList.valueOf(theme[3])
+                );
+                ((Switch) root).setTrackTintList(
+                        ColorStateList.valueOf(theme[2])
+                );
+            }
+        }
+
+
     }
 
 

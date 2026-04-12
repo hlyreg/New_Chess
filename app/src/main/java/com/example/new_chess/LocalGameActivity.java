@@ -1,7 +1,9 @@
 package com.example.new_chess;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -30,6 +32,16 @@ public class LocalGameActivity extends AppCompatActivity {
     private ImageButton btnRedo;
 
 
+    // ______________Timer________________________________
+    private CountDownTimer whiteTimer;
+    private CountDownTimer blackTimer;
+
+    private long whiteTimeLeft;
+    private long blackTimeLeft;
+
+    private boolean timerEnabled;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +56,14 @@ public class LocalGameActivity extends AppCompatActivity {
                 findViewById(android.R.id.content),
                 ThemeManager.getTheme(this)
         );
+
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+
+        timerEnabled = prefs.getBoolean("timer_enabled", false);
+        int minutes = prefs.getInt("timer_minutes", 5);
+
+        whiteTimeLeft = minutes * 60 * 1000;
+        blackTimeLeft = minutes * 60 * 1000;
 
         bottomPlayerName = findViewById(R.id.bottomPlayerName);
         topPlayerName = findViewById(R.id.topPlayerName);
@@ -69,6 +89,22 @@ public class LocalGameActivity extends AppCompatActivity {
 
             game.makeMove(piece, move);
 
+            if (timerEnabled) {
+                if (chessBoardView.isWhiteTurn()) {
+                    // white just moved → switch to black
+                    stopWhiteTimer();
+                    whiteTimeLeft += 3000; //adding increment (3 seconds)
+                    startBlackTimer();
+                } else {
+                    // black just moved → switch to white
+                    stopBlackTimer();
+                    blackTimeLeft += 3000;
+                    startWhiteTimer();
+                }
+                bottomPlayerName.setText(formatTime(whiteTimeLeft));
+                topPlayerName.setText(formatTime(blackTimeLeft));
+            }
+
             int isCheckmate = game.checkMate(chessBoardView.isWhiteTurn());
             if (game.isThreefoldRepetition() || game.getMoveCounter(0) >= 50 || game.getMoveCounter(1) >= 50) {
                 showWinDialog(-2);
@@ -82,6 +118,13 @@ public class LocalGameActivity extends AppCompatActivity {
 
             chessBoardView.invalidate();
         });
+
+        if (timerEnabled) {
+            bottomPlayerName.setText(formatTime(whiteTimeLeft));
+            topPlayerName.setText(formatTime(blackTimeLeft));
+
+            startWhiteTimer(); // white starts
+        }
     }
 
 
@@ -181,7 +224,55 @@ public class LocalGameActivity extends AppCompatActivity {
         }
     }
 
+    private void stopWhiteTimer() {
+        if (whiteTimer != null) whiteTimer.cancel();
+    }
 
+    private void stopBlackTimer() {
+        if (blackTimer != null) blackTimer.cancel();
+    }
+
+    private void startWhiteTimer() {
+        whiteTimer = new CountDownTimer(whiteTimeLeft, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                whiteTimeLeft = millisUntilFinished;
+                bottomPlayerName.setText(formatTime(whiteTimeLeft));
+            }
+
+            @Override
+            public void onFinish() {
+                showWinDialog(0); // white lost
+            }
+        }.start();
+    }
+
+    private void startBlackTimer() {
+        blackTimer = new CountDownTimer(blackTimeLeft, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                blackTimeLeft = millisUntilFinished;
+                topPlayerName.setText(formatTime(blackTimeLeft));
+            }
+
+            @Override
+            public void onFinish() {
+                showWinDialog(1); // black lost
+            }
+        }.start();
+    }
+
+    public String formatTime(long millis) {
+        int seconds = (int) (millis / 1000);
+        int minutes = seconds / 60;
+        seconds = seconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+
+    public void quit(View v){
+        startActivity(new Intent(this, HomeActivity.class));
+    }
 
 
 

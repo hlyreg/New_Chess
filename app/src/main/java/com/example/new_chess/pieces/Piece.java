@@ -144,7 +144,7 @@ public abstract class Piece {
     }
 
     public boolean compare(Piece p){
-        if(p.getColour() == this.colour && p.getID() == this.ID && p.getPlace() == this.place)
+        if(p.getColour() == this.colour && p.getID() == this.ID && p.getPlace().compare(place.getX(), place.getY()))
             return true;
         return false;
     }

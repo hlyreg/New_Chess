@@ -78,5 +78,19 @@
             android:src="@android:drawable/ic_media_ff" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/buttonQuit"
+        android:layout_width="75dp"
+        android:layout_height="46dp"
+        android:fontFamily="sans-serif-black"
+        android:onClick="quit"
+        android:text="quit"
+        app:layout_constraintBottom_toBottomOf="@+id/undoRedoLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.931" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

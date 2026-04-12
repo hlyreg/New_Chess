@@ -169,23 +169,22 @@ public class Board {
 
 
     @Override
-    public boolean equals(Object o){
-        if(o instanceof Board){
-            Piece[][] cmpBoard = ((Board) o).getBoard();
+    public boolean equals(Object o) {
+        if (!(o instanceof Board)) return false;
 
+        Piece[][] cmpBoard = ((Board) o).getBoard();
 
-            for(int x = 0; x < 7; x++){
-                for(int y = 0; y < 7; y++){
-                    Piece piece = cmpBoard[x][y];
-                    if(piece != null){
-                        if(!piece.compare(board[x][y]))
-                            return false;
-                    }
-                }
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                Piece p1 = board[x][y];
+                Piece p2 = cmpBoard[x][y];
+
+                if (p1 == null && p2 == null) continue; // both empty, fine
+                if (p1 == null || p2 == null) return false; // mismatch
+                if (!p1.compare(p2)) return false; // piece mismatch
             }
-            return true;
         }
-        return false;
+        return true;
     }
 
     public boolean wasLastMovePawnTwo() {
