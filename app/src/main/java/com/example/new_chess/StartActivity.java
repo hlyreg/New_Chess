@@ -1,10 +1,23 @@
 package com.example.new_chess;
 
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -13,8 +26,14 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.new_chess.firebase.ThemeManager;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Calendar;
+
 public class StartActivity extends AppCompatActivity {
     FirebaseAuth auth;
+    private final ActivityResultLauncher<String> requestPermission =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                    isGranted -> scheduleDailyReminder(this));
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +50,9 @@ public class StartActivity extends AppCompatActivity {
                 ThemeManager.getTheme(this)
         );
 
+
+        createNotificationChannel();
+
         auth = FirebaseAuth.getInstance();
 
         if(auth.getCurrentUser() != null){
@@ -41,6 +63,8 @@ public class StartActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_start);
     }
+
+
 
     public void LogIn(View v){
         startActivity(new Intent(this, LoginActivity.class));
@@ -54,5 +78,55 @@ public class StartActivity extends AppCompatActivity {
         startActivity(new Intent(this, LoginActivity.class));
     }
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "chess_channel",
+                    "Chess Reminders",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+
+            NotificationManager manager =
+                    getSystemService(NotificationManager.class);
+
+            manager.createNotificationChannel(channel);
+        }
+    }
+    private void askNotificationPermission() {
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            // FCM SDK (and your app) can post notifications.
+        } else {
+            // Directly ask for the permission
+            requestPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+    }
+
+    private void scheduleDailyReminder(Context context) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 11);
+        calendar.set(Calendar.MINUTE, 40);
+        calendar.set(Calendar.SECOND, 0);
+
+        if (calendar.before(Calendar.getInstance())) {
+            calendar.add(Calendar.DATE, 1);
+        }
+
+        Intent intent = new Intent(context, ReminderReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+        );
+
+        AlarmManager alarmManager =
+                (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                AlarmManager.INTERVAL_DAY,
+                pendingIntent
+        );
+    }
+
 
 }
+
