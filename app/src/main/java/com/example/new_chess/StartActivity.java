@@ -104,7 +104,7 @@ public class StartActivity extends AppCompatActivity {
     private void scheduleDailyReminder(Context context) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 11);
-        calendar.set(Calendar.MINUTE, 40);
+        calendar.set(Calendar.MINUTE, 50);
         calendar.set(Calendar.SECOND, 0);
 
         if (calendar.before(Calendar.getInstance())) {
