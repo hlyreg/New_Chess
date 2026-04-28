@@ -32,7 +32,11 @@ public class StartActivity extends AppCompatActivity {
     FirebaseAuth auth;
     private final ActivityResultLauncher<String> requestPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),
-                    isGranted -> scheduleDailyReminder(this));
+                    isGranted -> {
+                        if (isGranted) {
+                            scheduleDailyReminder(this);
+                        }
+                    });
 
 
     @Override
@@ -49,9 +53,10 @@ public class StartActivity extends AppCompatActivity {
                 findViewById(android.R.id.content),
                 ThemeManager.getTheme(this)
         );
-
+        askNotificationPermission();
 
         createNotificationChannel();
+
 
         auth = FirebaseAuth.getInstance();
 
@@ -61,7 +66,6 @@ public class StartActivity extends AppCompatActivity {
             return;
         }
 
-        setContentView(R.layout.activity_start);
     }
 
 
@@ -94,7 +98,7 @@ public class StartActivity extends AppCompatActivity {
     }
     private void askNotificationPermission() {
         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            // FCM SDK (and your app) can post notifications.
+            scheduleDailyReminder(this);
         } else {
             // Directly ask for the permission
             requestPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
@@ -103,8 +107,8 @@ public class StartActivity extends AppCompatActivity {
 
     private void scheduleDailyReminder(Context context) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 11);
-        calendar.set(Calendar.MINUTE, 50);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
         if (calendar.before(Calendar.getInstance())) {
@@ -119,10 +123,9 @@ public class StartActivity extends AppCompatActivity {
         AlarmManager alarmManager =
                 (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        alarmManager.setRepeating(
+        alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY,
                 pendingIntent
         );
     }
