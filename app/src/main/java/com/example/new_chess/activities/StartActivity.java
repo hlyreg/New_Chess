@@ -1,4 +1,4 @@
-package com.example.new_chess;
+package com.example.new_chess.activities;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 
@@ -16,13 +16,14 @@ import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.new_chess.R;
+import com.example.new_chess.ReminderReceiver;
 import com.example.new_chess.firebase.ThemeManager;
 import com.google.firebase.auth.FirebaseAuth;
 

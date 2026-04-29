@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#EAE0CF"
-    tools:context=".LocalGameActivity" >
+    tools:context=".activities.LocalGameActivity" >
 
     <TextView
         android:id="@+id/topPlayerName"

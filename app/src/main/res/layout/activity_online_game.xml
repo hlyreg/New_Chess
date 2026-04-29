@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#EAE0CF"
-    tools:context=".OnlineGameActivity" >
+    tools:context=".activities.OnlineGameActivity" >
 
     <TextView
         android:id="@+id/topPlayerName"

@@ -1,4 +1,4 @@
-package com.example.new_chess;
+package com.example.new_chess.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +17,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.new_chess.ChessBoardView;
+import com.example.new_chess.R;
 import com.example.new_chess.firebase.ChatAdapter;
 import com.example.new_chess.firebase.ChatMessage;
 import com.example.new_chess.firebase.GameResult;
