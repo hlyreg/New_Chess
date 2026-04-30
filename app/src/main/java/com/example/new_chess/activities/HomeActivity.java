@@ -16,7 +16,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.new_chess.R;
-import com.example.new_chess.firebase.ProfileActivity;
 import com.example.new_chess.firebase.ThemeManager;
 import com.example.new_chess.firebase.User;
 import com.google.firebase.auth.FirebaseAuth;

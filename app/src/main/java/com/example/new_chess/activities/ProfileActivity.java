@@ -1,4 +1,4 @@
-package com.example.new_chess.firebase;
+package com.example.new_chess.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,8 +17,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.new_chess.activities.HomeActivity;
 import com.example.new_chess.R;
+import com.example.new_chess.firebase.ThemeManager;
+import com.example.new_chess.firebase.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

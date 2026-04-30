@@ -19,7 +19,7 @@
         <receiver android:name=".ReminderReceiver" />
 
         <activity
-            android:name=".firebase.ProfileActivity"
+            android:name=".activities.ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".activities.OnlineGameActivity"
@@ -35,9 +35,6 @@
             android:exported="false" />
         <activity
             android:name=".activities.LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".canvasTry"
             android:exported="false" />
         <activity
             android:name=".activities.StartActivity"
