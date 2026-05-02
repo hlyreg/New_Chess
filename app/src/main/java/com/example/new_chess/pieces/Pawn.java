@@ -33,7 +33,7 @@ public class Pawn extends Piece {
         int y = this.place.getY();
         Piece[][] board = current_board.getBoard();
         List<Point> moves = new ArrayList<>();
-//_______________________________White_______________________________________________
+    //_______________________________White_______________________________________________
         if(y+1 < 8) {
 
             if (colour == 1 || (isUserBlack && colour == 0)) {
@@ -57,7 +57,7 @@ public class Pawn extends Piece {
             }
         }
 
-//_________________________________Black________________________________________
+    //_________________________________Black________________________________________
 
         if(y-1>= 0) {
 

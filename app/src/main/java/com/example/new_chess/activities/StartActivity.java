@@ -80,7 +80,7 @@ public class StartActivity extends AppCompatActivity {
     }
 
     public void playLocal(View v){
-        startActivity(new Intent(this, LoginActivity.class));
+        startActivity(new Intent(this, LocalGameActivity.class));
     }
 
     private void createNotificationChannel() {
