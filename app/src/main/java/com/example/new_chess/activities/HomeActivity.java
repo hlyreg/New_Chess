@@ -19,28 +19,30 @@ import com.example.new_chess.R;
 import com.example.new_chess.firebase.ThemeManager;
 import com.example.new_chess.firebase.User;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
-    FirebaseAuth auth;
-    Button searchButton;
-    private boolean isInviteDialogShowing = false;
+
+    private FirebaseAuth auth;
     private EditText usernameInput;
-    private Button searchUserButton;
-    private Button playFriendButton;
+    private Button searchUserButton, playFriendButton;
+
+    private boolean isInviteDialogShowing = false;
+    private boolean gameStarted = false;
+
+    private DatabaseReference invitesRef;
+    private ValueEventListener invitesListener;
+    private ValueEventListener acceptedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -52,119 +54,109 @@ public class HomeActivity extends AppCompatActivity {
                 ThemeManager.getTheme(this)
         );
 
+        auth = FirebaseAuth.getInstance();
+
         usernameInput = findViewById(R.id.usernameInput);
         searchUserButton = findViewById(R.id.searchUserButton);
         playFriendButton = findViewById(R.id.playFriendButton);
 
-
-
-        auth = FirebaseAuth.getInstance();
+        invitesRef = FirebaseDatabase.getInstance().getReference("invites");
 
         loadUser();
 
         playFriendButton.setOnClickListener(v -> {
-
             usernameInput.setVisibility(View.VISIBLE);
             searchUserButton.setVisibility(View.VISIBLE);
             usernameInput.requestFocus();
-
         });
 
         listenForInvites();
         listenForAcceptedInvites();
+    }
 
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
+        if (invitesListener != null)
+            invitesRef.removeEventListener(invitesListener);
 
-    private void loadUser(){
+        if (acceptedListener != null)
+            invitesRef.removeEventListener(acceptedListener);
+    }
+
+    private void loadUser() {
         TextView greeting = findViewById(R.id.greetingTV);
 
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        DatabaseReference userRef =
-                FirebaseDatabase.getInstance()
-                        .getReference()
-                        .child("users")
-                        .child(uid);
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(uid);
 
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-
                 User user = snapshot.getValue(User.class);
-
-                greeting.setText("Welcome " + user.username);
-
+                if (user != null)
+                    greeting.setText("Welcome " + user.username);
             }
 
-            @Override
-            public void onCancelled(DatabaseError error) {}
+            @Override public void onCancelled(DatabaseError error) {}
         });
     }
 
-
-    public void profile(View v){
+    public void profile(View v) {
         startActivity(new Intent(this, ProfileActivity.class));
     }
 
-    public void logout(View v){
+    public void logout(View v) {
         auth.signOut();
         startActivity(new Intent(this, StartActivity.class));
         finish();
     }
 
-    public void playLocal(View v){
+    public void playLocal(View v) {
         startActivity(new Intent(this, LocalGameActivity.class));
     }
 
-    public void playOnline(View v){
+    public void playOnline(View v) {
         String username = usernameInput.getText().toString();
         searchForPlayer(username);
     }
 
-    private void searchForPlayer(String username){
-
+    private void searchForPlayer(String username) {
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
 
         usersRef.orderByChild("username").equalTo(username)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
-
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-
-                        if(!snapshot.exists()){
-                            Toast.makeText(getApplicationContext(),"User not found", Toast.LENGTH_SHORT).show();
+                        if (!snapshot.exists()) {
+                            Toast.makeText(getApplicationContext(), "User not found", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
-                        for(DataSnapshot user : snapshot.getChildren()){
-
+                        for (DataSnapshot user : snapshot.getChildren()) {
                             String opponentUID = user.getKey();
-
-                            sendInvite(opponentUID);
-                            Toast.makeText(getApplicationContext(),"Invite sent!", Toast.LENGTH_SHORT).show();
-
+                            if (opponentUID != null) {
+                                sendInvite(opponentUID);
+                                Toast.makeText(getApplicationContext(), "Invite sent!", Toast.LENGTH_SHORT).show();
+                            }
                             break;
                         }
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-
-                    }
+                    @Override public void onCancelled(DatabaseError error) {}
                 });
     }
 
-    private void sendInvite(String opponentUID){
-
+    private void sendInvite(String opponentUID) {
         String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
 
         String inviteID = invitesRef.push().getKey();
 
-        Map<String,Object> invite = new HashMap<>();
+        Map<String, Object> invite = new HashMap<>();
         invite.put("status", "pending");
         invite.put("from", myUID);
         invite.put("to", opponentUID);
@@ -174,7 +166,9 @@ public class HomeActivity extends AppCompatActivity {
         invitesRef.child(inviteID).setValue(invite);
     }
 
-    private void startGame(String gameID, boolean isWhite){
+    private void startGame(String gameID, boolean isWhite) {
+        if (gameStarted) return;
+        gameStarted = true;
 
         Intent intent = new Intent(this, OnlineGameActivity.class);
         intent.putExtra("GAME_ID", gameID);
@@ -182,54 +176,50 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
-    private void listenForInvites(){
-
+    private void listenForInvites() {
         String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
+        invitesListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot inviteSnap : snapshot.getChildren()) {
 
-        invitesRef.orderByChild("to").equalTo(myUID)
-                .addValueEventListener(new ValueEventListener() {
+                    Long timestamp = inviteSnap.child("timestamp").getValue(Long.class);
+                    long now = System.currentTimeMillis();
 
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-
-                        for(DataSnapshot inviteSnap : snapshot.getChildren()){
-
-                            Long timestamp = inviteSnap.child("timestamp").getValue(Long.class);
-                            long now = System.currentTimeMillis();
-
-                            if(timestamp != null && now - timestamp > 30000){
-                                expireInvite(inviteSnap.getKey());
-                                continue;
-                            }
-
-                            String status = inviteSnap.child("status").getValue(String.class);
-                            if (!"pending".equals(status)) continue;
-
-                            Boolean seen = inviteSnap.child("seen").getValue(Boolean.class);
-
-                            if(seen == null || !seen){
-                                markInviteSeen(inviteSnap.getKey());
-                                showInvitePopup(inviteSnap);
-                            }
-                        }
+                    if (timestamp != null && now - timestamp > 30000) {
+                        invitesRef.child(inviteSnap.getKey()).removeValue();
+                        continue;
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError error) {}
-                });
+                    String status = inviteSnap.child("status").getValue(String.class);
+                    if (!"pending".equals(status)) continue;
+
+                    Boolean seen = inviteSnap.child("seen").getValue(Boolean.class);
+
+                    if (seen == null || !seen) {
+                        markInviteSeen(inviteSnap.getKey());
+                        showInvitePopup(inviteSnap);
+                    }
+                }
+            }
+
+            @Override public void onCancelled(DatabaseError error) {}
+        };
+
+        invitesRef.orderByChild("to").equalTo(myUID)
+                .addValueEventListener(invitesListener);
     }
 
-    private void showInvitePopup(DataSnapshot inviteSnap){
-
-        if (isInviteDialogShowing) return; // prevent's multiple invites
-
-        isInviteDialogShowing = true;
+    private void showInvitePopup(DataSnapshot inviteSnap) {
+        if (isInviteDialogShowing) return;
 
         String fromUID = inviteSnap.child("from").getValue(String.class);
         String inviteID = inviteSnap.getKey();
+
+        if (fromUID == null || inviteID == null) return;
+
+        isInviteDialogShowing = true;
 
         DatabaseReference userRef = FirebaseDatabase.getInstance()
                 .getReference("users")
@@ -245,109 +235,75 @@ public class HomeActivity extends AppCompatActivity {
                     .setMessage(username + " challenged you!")
 
                     .setPositiveButton("Accept", (dialog, which) -> {
+                        isInviteDialogShowing = false;
                         acceptInvite(inviteID, fromUID);
                     })
 
                     .setNegativeButton("Decline", (dialog, which) -> {
+                        isInviteDialogShowing = false;
                         declineInvite(inviteID);
                     })
 
+                    .setOnDismissListener(dialog -> isInviteDialogShowing = false)
                     .show();
         });
     }
 
-    private void listenForAcceptedInvites(){
-
+    private void listenForAcceptedInvites() {
         String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        DatabaseReference invitesRef = FirebaseDatabase.getInstance().getReference("invites");
+        acceptedListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot inviteSnap : snapshot.getChildren()) {
 
-        invitesRef.orderByChild("from").equalTo(myUID)
-                .addValueEventListener(new ValueEventListener() {
+                    String status = inviteSnap.child("status").getValue(String.class);
+                    Boolean consumed = inviteSnap.child("consumed").getValue(Boolean.class);
+                    String gameID = inviteSnap.child("gameID").getValue(String.class);
+                    String inviteID = inviteSnap.getKey();
 
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
+                    if ("accepted".equals(status) && (consumed == null || !consumed)) {
+                        if (gameID != null && inviteID != null) {
 
-                        for(DataSnapshot inviteSnap : snapshot.getChildren()){
+                            invitesRef.child(inviteID).child("consumed").setValue(true);
 
-                            String status = inviteSnap.child("status").getValue(String.class);
-                            Boolean consumed = inviteSnap.child("consumed").getValue(Boolean.class);
-                            String gameID = inviteSnap.child("gameID").getValue(String.class);
-                            String inviteID = inviteSnap.getKey();
-
-                            if("accepted".equals(status) && (consumed == null || !consumed)){
-
-                                if(gameID != null){
-
-                                    markInviteConsumed(inviteID);
-
-                                    // prevent multiple launches
-                                    if(!isFinishing()){
-                                        startGame(gameID, true);  //theoretically the inviter is always white
-                                    }
-                                }
-                            }
+                            startGame(gameID, true);
                         }
                     }
+                }
+            }
 
-                    @Override public void onCancelled(DatabaseError error) {}
-                });
+            @Override public void onCancelled(DatabaseError error) {}
+        };
+
+        invitesRef.orderByChild("from").equalTo(myUID)
+                .addValueEventListener(acceptedListener);
     }
-    private void acceptInvite(String inviteID, String opponentUID){
 
+    private void acceptInvite(String inviteID, String opponentUID) {
         String myUID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
 
         String gameID = rootRef.child("games").push().getKey();
 
-        Map<String,Object> game = new HashMap<>();
+        Map<String, Object> game = new HashMap<>();
         game.put("white", opponentUID);
         game.put("black", myUID);
 
         rootRef.child("games").child(gameID).setValue(game);
 
-        // store gameID in invite
         rootRef.child("invites").child(inviteID).child("gameID").setValue(gameID);
-
         rootRef.child("invites").child(inviteID).child("status").setValue("accepted");
+        rootRef.child("invites").child(inviteID).child("consumed").setValue(true);
 
-        markInviteConsumed(inviteID);
         startGame(gameID, false);
     }
-    private void markInviteConsumed(String inviteID){
-        FirebaseDatabase.getInstance()
-                .getReference("invites")
-                .child(inviteID)
-                .child("consumed")
-                .setValue(true);
+
+    private void declineInvite(String inviteID) {
+        invitesRef.child(inviteID).removeValue();
     }
 
-    private void declineInvite(String inviteID){
-        FirebaseDatabase.getInstance()
-                .getReference("invites")
-                .child(inviteID)
-                .child("status")
-                .setValue("declined");
+    private void markInviteSeen(String inviteID) {
+        invitesRef.child(inviteID).child("seen").setValue(true);
     }
-
-    private void markInviteSeen(String inviteID){
-        FirebaseDatabase.getInstance()
-                .getReference("invites")
-                .child(inviteID)
-                .child("seen")
-                .setValue(true);
-    }
-
-    private void expireInvite(String inviteID){
-        FirebaseDatabase.getInstance()
-                .getReference("invites")
-                .child(inviteID)
-                .child("status")
-                .setValue("expired");
-    }
-
 }
-
-
-
